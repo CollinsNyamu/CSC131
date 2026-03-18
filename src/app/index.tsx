@@ -1,31 +1,23 @@
-import { Image } from 'expo-image';
-import React, { useEffect, useState} from 'react';
-import { Pressable, Text, View, StyleSheet } from 'react-native';
+// index.tsx
+// This is the initial root / first screen
 
+import { Image } from 'expo-image';
+import React, { useEffect, useState } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+
+
+// Main
 export default function Index() {
-  return (
+  return(
     <>
-      <View 
-      style={styles.headerBackground}
-      >
-        <Text
-        style={styles.headerText}
-        >
+      <View style={styles.headerBackground}>
+        <Text style={styles.headerText}>
           Daily Tasks:
         </Text>
         <Clock />
       </View>
 
-      <View
-      style={{
-        flex: 7,
-        backgroundColor: 'turquoise',
-        justifyContent: 'flex-start',
-        alignItems: 'center',
-        rowGap: 20,
-        padding: 20
-      }}
-      >
+      <View style={styles.mainBackground}>
         <Task 
           task='task 1'
           value={10}
@@ -49,51 +41,30 @@ export default function Index() {
       </View>
     </>
   );
-}
+};
 
+
+// Tasks
 type TaskProps = {
   task: string;
   value: number;
-}
+};
 
 const Task = (props: TaskProps) => {
   return(
-  <View
-    style={{
-      alignItems: 'center',
-      backgroundColor: 'lightgreen',
-      flexDirection: 'row',
-      justifyContent: 'flex-start',
-      columnGap: 20,
-      width: '90%',
-      padding: 10,
-      flexWrap: 'wrap'
-    }}
-  >
+  <View style={styles.taskBackground}>
     <Checkbox />
-    <Text
-      style={{
-        color: 'purple',
-        fontSize: 20,
-        justifyContent: 'flex-end'
-      }}
-    >
+    <Text style={styles.taskPoints}>
         {props.value}
     </Text>
 
-    <Text
-    style={{
-      justifyContent: 'center'
-    }}
-    >
+    <Text style={styles.taskText}>
       {props.task}
     </Text>
 
-    
   </View>
-  )
-}
-
+  );
+};
 
 const Checkbox = () => {
   const [pressed, setPressed] = useState(true);
@@ -105,19 +76,20 @@ const Checkbox = () => {
       }}
     >
       <Image 
-        source={pressed? require('@/assets/images/icon.png') : require('@/assets/images/favicon.png')} 
+        source={pressed? require('@/assets/images/checkmark_empty.png') : require('@/assets/images/checkmark_filled.png')} 
         style={{ width: 50, height: 50, alignSelf: 'center' }}
       />
     </Pressable>
   );
 };
 
+// Clock
 const Clock = () => {
   const [time, setTime] = useState(new Date().toTimeString());
   
   useEffect(() => {
     const timer = setInterval(() => {
-      setTime(new Date().toTimeString());
+      setTime(new Date().toLocaleString());
     }, 1000);
 
     return () => clearInterval(timer); // Cleanup on component unmount
@@ -130,7 +102,9 @@ const Clock = () => {
   );
 };
 
-const styles = StyleSheet.create({ 
+// Style sheet
+const styles = StyleSheet.create({
+  // header
   headerBackground:{
     flex: 1,
     backgroundColor: 'lightblue',
@@ -139,7 +113,33 @@ const styles = StyleSheet.create({
   },
   headerText:{
     fontSize: 40
+  },
+  // main background
+  mainBackground:{
+    flex: 7,
+    backgroundColor: 'turquoise',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    rowGap: 20,
+    padding: 20
+  },
+  // tasks
+  taskBackground:{
+    alignItems: 'center',
+    backgroundColor: 'lightgreen',
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    columnGap: 20,
+    width: '90%',
+    padding: 10,
+    flexWrap: 'wrap'
+  },
+  taskPoints:{
+    color: 'purple',
+    fontSize: 20,
+    justifyContent: 'flex-end'
+  },
+  taskText:{
+    justifyContent: 'center'
   }
-
-  
 });
