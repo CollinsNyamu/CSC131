@@ -1,43 +1,30 @@
 // index.tsx
 // This is the initial root / first screen
 
+import { globalStyles } from '@/components/globalStyles';
 import { Image } from 'expo-image';
+import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Button, Pressable, StyleSheet, Text, View } from 'react-native';
 
 
 // Main
 export default function Index() {
+  const router = useRouter();
+
   return(
     <>
-      <View style={styles.headerBackground}>
-        <Text style={styles.headerText}>
-          Daily Tasks:
+      <View style={globalStyles.headerBackground}>
+        <Text style={globalStyles.headerText}>
+          Daily Tasks
         </Text>
         <Clock />
       </View>
 
-      <View style={styles.mainBackground}>
-        <Task 
-          task='task 1'
-          value={10}
-        />
-        <Task 
-          task='task 2'
-          value={20}
-        />
-        <Task 
-          task='task 3 but with a very super long text description'
-          value={30}
-        />
-        <Task 
-          task='task 4'
-          value={400}
-        />
-        <Task 
-          task='task 5'
-          value={5000}
-        />
+    <TaskList />
+
+      <View>
+        <Button title="Go to Leaderboards" onPress={() => router.navigate('/leaderboards')} />;
       </View>
     </>
   );
@@ -45,6 +32,23 @@ export default function Index() {
 
 
 // Tasks
+const Checkbox = () => {
+  const [pressed, setPressed] = useState(true);
+
+  return(
+    <Pressable
+      onPress={() => {
+        setPressed(false);
+      }}
+    >
+      <Image 
+        source={pressed? require('@/assets/images/checkmark_empty.png') : require('@/assets/images/checkmark_filled.png')} 
+        style={{ width: 50, height: 50, alignSelf: 'center' }}
+      />
+    </Pressable>
+  );
+};
+
 type TaskProps = {
   task: string;
   value: number;
@@ -66,22 +70,33 @@ const Task = (props: TaskProps) => {
   );
 };
 
-const Checkbox = () => {
-  const [pressed, setPressed] = useState(true);
-
+const TaskList = () => {
   return(
-    <Pressable
-      onPress={() => {
-        setPressed(false);
-      }}
-    >
-      <Image 
-        source={pressed? require('@/assets/images/checkmark_empty.png') : require('@/assets/images/checkmark_filled.png')} 
-        style={{ width: 50, height: 50, alignSelf: 'center' }}
-      />
-    </Pressable>
+      <View style={globalStyles.mainBackground}>
+        <Task 
+          task='task 1'
+          value={10}
+        />
+        <Task 
+          task='task 2'
+          value={20}
+        />
+        <Task 
+          task='task 3 but with a very super long text description'
+          value={30}
+        />
+        <Task 
+          task='task 4'
+          value={400}
+        />
+        <Task 
+          task='task 5'
+          value={5000}
+        />
+      </View>
   );
 };
+
 
 // Clock
 const Clock = () => {
@@ -102,27 +117,8 @@ const Clock = () => {
   );
 };
 
-// Style sheet
+// Style sheet for home page
 const styles = StyleSheet.create({
-  // header
-  headerBackground:{
-    flex: 1,
-    backgroundColor: 'lightblue',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  headerText:{
-    fontSize: 40
-  },
-  // main background
-  mainBackground:{
-    flex: 7,
-    backgroundColor: 'turquoise',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    rowGap: 20,
-    padding: 20
-  },
   // tasks
   taskBackground:{
     alignItems: 'center',
