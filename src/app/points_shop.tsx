@@ -9,6 +9,12 @@ export default function PointsShop() {
                     Points Shop
                 </Text>
             </View>
+
+            <View style={globalStyles.mainBackground}>
+                <Text>
+                    Items
+                </Text>
+            </View>
         </>
     )
 }

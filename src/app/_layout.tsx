@@ -1,6 +1,6 @@
 // _layout.tsx
 // This is the root layout
-// Initialization code goes here (equivalent to App.tsx)
+// Initialization code goes here
 
 import AppTabs from '@/components/app-tabs';
 

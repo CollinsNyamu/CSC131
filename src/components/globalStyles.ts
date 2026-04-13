@@ -20,5 +20,5 @@ export const globalStyles = StyleSheet.create({
     alignItems: 'center',
     rowGap: 20,
     padding: 20
-  }
+  },
 });

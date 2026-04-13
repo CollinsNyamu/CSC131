@@ -9,6 +9,12 @@ export default function Leaderboard() {
                     Leaderboards
                 </Text>
             </View>
+
+            <View style={globalStyles.mainBackground}>
+                <Text>
+                    Names
+                </Text>
+            </View>
         </>
     )
 }

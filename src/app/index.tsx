@@ -5,7 +5,7 @@ import { globalStyles } from '@/components/globalStyles';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Button, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 
 // Main
@@ -21,11 +21,7 @@ export default function Index() {
         <Clock />
       </View>
 
-    <TaskList />
-
-      <View>
-        <Button title="Go to Leaderboards" onPress={() => router.navigate('/leaderboards')} />;
-      </View>
+      <TaskList />
     </>
   );
 };
@@ -42,7 +38,7 @@ const Checkbox = () => {
       }}
     >
       <Image 
-        source={pressed? require('@/assets/images/checkmark_empty.png') : require('@/assets/images/checkmark_filled.png')} 
+        source={pressed? require('../../assets/images/checkmark_empty.png') : require('../../assets/images/checkmark_filled.png')} 
         style={{ width: 50, height: 50, alignSelf: 'center' }}
       />
     </Pressable>
@@ -56,17 +52,17 @@ type TaskProps = {
 
 const Task = (props: TaskProps) => {
   return(
-  <View style={styles.taskBackground}>
-    <Checkbox />
-    <Text style={styles.taskPoints}>
-        {props.value}
-    </Text>
+    <View style={homeStyles.taskBackground}>
+      <Checkbox />
+      <Text style={homeStyles.taskPoints}>
+          {props.value}
+      </Text>
 
-    <Text style={styles.taskText}>
-      {props.task}
-    </Text>
+      <Text style={homeStyles.taskText}>
+        {props.task}
+      </Text>
 
-  </View>
+    </View>
   );
 };
 
@@ -118,7 +114,7 @@ const Clock = () => {
 };
 
 // Style sheet for home page
-const styles = StyleSheet.create({
+const homeStyles = StyleSheet.create({
   // tasks
   taskBackground:{
     alignItems: 'center',
