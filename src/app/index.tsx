@@ -67,13 +67,13 @@ type TaskProps = {
 
 const Task = (props: TaskProps) => {
   return(
-  <View style={homeStyles.taskBackground}>
+  <View style={taskStyles.taskBackground}>
     <Checkbox />
-    <Text style={homeStyles.taskPoints}>
+    <Text style={taskStyles.taskPoints}>
         {props.value}
     </Text>
 
-    <Text style={homeStyles.taskText}>
+    <Text style={taskStyles.taskText}>
       {props.task}
     </Text>
 
@@ -93,8 +93,8 @@ const Checkbox = () => {
       <Image 
         source={
           pressed
-          ? require('@/assets/images/checkmark_empty.png') 
-          : require('@/assets/images/checkmark_filled.png')} 
+          ? require('../../assets/images/checkmark_filled.png') 
+          : require('../../assets/images/checkmark_empty.png')} 
         style={{ width: 50, height: 50, alignSelf: 'center' }}
       />
     </Pressable>
@@ -121,7 +121,7 @@ const Clock = () => {
 };
 
 // Style sheet for home page
-const homeStyles = StyleSheet.create({
+const taskStyles = StyleSheet.create({
   // tasks
   taskBackground:{
     alignItems: 'center',
