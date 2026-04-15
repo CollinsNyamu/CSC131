@@ -1,23 +1,74 @@
 // index.tsx
 // This is the initial root / first screen
 
+import { globalStyles } from '@/components/globalStyles';
 import { Image } from 'expo-image';
+import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 
 // Main
 export default function Index() {
+  const router = useRouter();
+
   return(
     <>
-      <View style={styles.headerBackground}>
-        <Text style={styles.headerText}>
-          Daily Tasks:
+      <View style={globalStyles.headerBackground}>
+        <Text style={globalStyles.headerText}>
+          Daily Tasks
         </Text>
         <Clock />
       </View>
 
-      <View style={styles.mainBackground}>
+      <TaskList />
+    </>
+  );
+};
+
+
+// Tasks
+const Checkbox = () => {
+  const [pressed, setPressed] = useState(true);
+
+  return(
+    <Pressable
+      onPress={() => {
+        setPressed(false);
+      }}
+    >
+      <Image 
+        source={pressed? require('../../assets/images/checkmark_empty.png') : require('../../assets/images/checkmark_filled.png')} 
+        style={{ width: 50, height: 50, alignSelf: 'center' }}
+      />
+    </Pressable>
+  );
+};
+
+type TaskProps = {
+  task: string;
+  value: number;
+};
+
+const Task = (props: TaskProps) => {
+  return(
+    <View style={homeStyles.taskBackground}>
+      <Checkbox />
+      <Text style={homeStyles.taskPoints}>
+          {props.value}
+      </Text>
+
+      <Text style={homeStyles.taskText}>
+        {props.task}
+      </Text>
+
+    </View>
+  );
+};
+
+const TaskList = () => {
+  return(
+      <View style={globalStyles.mainBackground}>
         <Task 
           task='task 1'
           value={10}
@@ -39,49 +90,9 @@ export default function Index() {
           value={5000}
         />
       </View>
-    </>
   );
 };
 
-
-// Tasks
-type TaskProps = {
-  task: string;
-  value: number;
-};
-
-const Task = (props: TaskProps) => {
-  return(
-  <View style={styles.taskBackground}>
-    <Checkbox />
-    <Text style={styles.taskPoints}>
-        {props.value}
-    </Text>
-
-    <Text style={styles.taskText}>
-      {props.task}
-    </Text>
-
-  </View>
-  );
-};
-
-const Checkbox = () => {
-  const [pressed, setPressed] = useState(true);
-
-  return(
-    <Pressable
-      onPress={() => {
-        setPressed(false);
-      }}
-    >
-      <Image 
-        source={pressed? require('@/assets/images/checkmark_empty.png') : require('@/assets/images/checkmark_filled.png')} 
-        style={{ width: 50, height: 50, alignSelf: 'center' }}
-      />
-    </Pressable>
-  );
-};
 
 // Clock
 const Clock = () => {
@@ -102,27 +113,8 @@ const Clock = () => {
   );
 };
 
-// Style sheet
-const styles = StyleSheet.create({
-  // header
-  headerBackground:{
-    flex: 1,
-    backgroundColor: 'lightblue',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  headerText:{
-    fontSize: 40
-  },
-  // main background
-  mainBackground:{
-    flex: 7,
-    backgroundColor: 'turquoise',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    rowGap: 20,
-    padding: 20
-  },
+// Style sheet for home page
+const homeStyles = StyleSheet.create({
   // tasks
   taskBackground:{
     alignItems: 'center',
