@@ -4,44 +4,53 @@
 import { Image } from 'expo-image';
 import React, { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { tasks } from "../data/tasks";
 
+// picks 5 random tasks from all categories
+const getRandomTasks = (num: number) => {
+  const allTasks: { task: string; value: number }[] = [];
+
+  Object.keys(tasks).forEach((category) => {
+    tasks[category as keyof typeof tasks].forEach((t) => {
+      allTasks.push({
+        task: t,
+        value: Math.floor(Math.random() * 50) + 10,
+      });
+    });
+  });
+
+  const shuffled = allTasks.sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, num);
+};
 
 // Main
 export default function Index() {
+  const [dailyTasks, setDailyTasks] = useState<
+    { task: string; value: number }[]
+  >([]);
+
+  useEffect(() => {
+    const generated = getRandomTasks(5);
+    setDailyTasks(generated);
+  }, []);
+
+
   return(
-    <>
+   <>
       <View style={styles.headerBackground}>
-        <Text style={styles.headerText}>
-          Daily Tasks:
-        </Text>
+        <Text style={styles.headerText}>Daily Tasks:</Text>
         <Clock />
       </View>
 
       <View style={styles.mainBackground}>
-        <Task 
-          task='task 1'
-          value={10}
-        />
-        <Task 
-          task='task 2'
-          value={20}
-        />
-        <Task 
-          task='task 3 but with a very super long text description'
-          value={30}
-        />
-        <Task 
-          task='task 4'
-          value={400}
-        />
-        <Task 
-          task='task 5'
-          value={5000}
-        />
+        {dailyTasks.map((t, index) => (
+          <Task key={index} task={t.task} value={t.value} />
+        ))}
       </View>
     </>
   );
-};
+}
+
 
 
 // Tasks
@@ -67,16 +76,19 @@ const Task = (props: TaskProps) => {
 };
 
 const Checkbox = () => {
-  const [pressed, setPressed] = useState(true);
+  const [pressed, setPressed] = useState(false);
 
   return(
     <Pressable
       onPress={() => {
-        setPressed(false);
+        setPressed(!pressed);
       }}
     >
       <Image 
-        source={pressed? require('@/assets/images/checkmark_empty.png') : require('@/assets/images/checkmark_filled.png')} 
+        source={
+          pressed
+          ? require('@/assets/images/checkmark_empty.png') 
+          : require('@/assets/images/checkmark_filled.png')} 
         style={{ width: 50, height: 50, alignSelf: 'center' }}
       />
     </Pressable>
