@@ -6,11 +6,38 @@ import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { tasks } from "../data/tasks";
 
+// picks 5 random tasks from all categories
+const getRandomTasks = (num: number) => {
+  const allTasks: { task: string; value: number }[] = [];
+
+  Object.keys(tasks).forEach((category) => {
+    tasks[category as keyof typeof tasks].forEach((t) => {
+      allTasks.push({
+        task: t,
+        value: Math.floor(Math.random() * 50) + 10,
+      });
+    });
+  });
+
+  const shuffled = allTasks.sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, num);
+};
 
 // Main
 export default function Index() {
   const router = useRouter();
+
+  const [dailyTasks, setDailyTasks] = useState<
+    { task: string; value: number }[]
+  >([]);
+
+  useEffect(() => {
+    const generated = getRandomTasks(5);
+    setDailyTasks(generated);
+  }, []);
+
 
   return(
     <>
@@ -21,30 +48,18 @@ export default function Index() {
         <Clock />
       </View>
 
-      <TaskList />
+      <View style={globalStyles.mainBackground}>
+        {dailyTasks.map((t, index) => (
+          <Task key={index} task={t.task} value={t.value} />
+        ))}
+      </View>
     </>
   );
-};
+}
+
 
 
 // Tasks
-const Checkbox = () => {
-  const [pressed, setPressed] = useState(true);
-
-  return(
-    <Pressable
-      onPress={() => {
-        setPressed(false);
-      }}
-    >
-      <Image 
-        source={pressed? require('../../assets/images/checkmark_empty.png') : require('../../assets/images/checkmark_filled.png')} 
-        style={{ width: 50, height: 50, alignSelf: 'center' }}
-      />
-    </Pressable>
-  );
-};
-
 type TaskProps = {
   task: string;
   value: number;
@@ -52,47 +67,39 @@ type TaskProps = {
 
 const Task = (props: TaskProps) => {
   return(
-    <View style={homeStyles.taskBackground}>
-      <Checkbox />
-      <Text style={homeStyles.taskPoints}>
-          {props.value}
-      </Text>
+  <View style={taskStyles.taskBackground}>
+    <Checkbox />
+    <Text style={taskStyles.taskPoints}>
+        {props.value}
+    </Text>
 
-      <Text style={homeStyles.taskText}>
-        {props.task}
-      </Text>
+    <Text style={taskStyles.taskText}>
+      {props.task}
+    </Text>
 
-    </View>
+  </View>
   );
 };
 
-const TaskList = () => {
+const Checkbox = () => {
+  const [pressed, setPressed] = useState(false);
+
   return(
-      <View style={globalStyles.mainBackground}>
-        <Task 
-          task='task 1'
-          value={10}
-        />
-        <Task 
-          task='task 2'
-          value={20}
-        />
-        <Task 
-          task='task 3 but with a very super long text description'
-          value={30}
-        />
-        <Task 
-          task='task 4'
-          value={400}
-        />
-        <Task 
-          task='task 5'
-          value={5000}
-        />
-      </View>
+    <Pressable
+      onPress={() => {
+        setPressed(!pressed);
+      }}
+    >
+      <Image 
+        source={
+          pressed
+          ? require('../../assets/images/checkmark_filled.png') 
+          : require('../../assets/images/checkmark_empty.png')} 
+        style={{ width: 50, height: 50, alignSelf: 'center' }}
+      />
+    </Pressable>
   );
 };
-
 
 // Clock
 const Clock = () => {
@@ -114,7 +121,7 @@ const Clock = () => {
 };
 
 // Style sheet for home page
-const homeStyles = StyleSheet.create({
+const taskStyles = StyleSheet.create({
   // tasks
   taskBackground:{
     alignItems: 'center',
