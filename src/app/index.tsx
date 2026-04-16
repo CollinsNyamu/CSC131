@@ -5,6 +5,7 @@ import { Image } from 'expo-image';
 import React, { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { tasks } from "../data/tasks";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // picks 5 random tasks from all categories
 const getRandomTasks = (num: number) => {
@@ -30,9 +31,27 @@ export default function Index() {
   >([]);
 
   useEffect(() => {
-    const generated = getRandomTasks(5);
-    setDailyTasks(generated);
-  }, []);
+  const loadTasks = async () => {
+    const today = new Date().toDateString();
+
+    const savedDate = await AsyncStorage.getItem("date");
+    const savedTasks = await AsyncStorage.getItem("tasks");
+
+    if (savedDate === today && savedTasks) {
+      // same day → use saved tasks
+      setDailyTasks(JSON.parse(savedTasks));
+    } else {
+      // new day → generate new tasks
+      const newTasks = getRandomTasks(5);
+      setDailyTasks(newTasks);
+
+      await AsyncStorage.setItem("tasks", JSON.stringify(newTasks));
+      await AsyncStorage.setItem("date", today);
+    }
+  };
+
+  loadTasks();
+}, []);
 
 
   return(
@@ -87,8 +106,8 @@ const Checkbox = () => {
       <Image 
         source={
           pressed
-          ? require('@/assets/images/checkmark_empty.png') 
-          : require('@/assets/images/checkmark_filled.png')} 
+          ? require('@/assets/images/checkmark_filled.png') 
+          : require('@/assets/images/checkmark_empty.png')} 
         style={{ width: 50, height: 50, alignSelf: 'center' }}
       />
     </Pressable>
