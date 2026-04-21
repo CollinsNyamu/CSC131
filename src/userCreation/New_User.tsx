@@ -1,7 +1,7 @@
 import React, {useState} from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {StyleSheet, View, Text, Pressable,TextInput, Alert, AppState } from "react-native";
-import {supabase} from "../../lib/supabase";
+import {supabase} from "../lib/supabase";
 
 AppState.addEventListener('change', (state) => {
     if (state === 'active') {

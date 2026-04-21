@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StyleSheet, Text, TextInput, Pressable, Alert, View, AppState } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { supabase } from "../../lib/supabase";
+import { supabase } from "../lib/supabase";
 
 // Handle app state for auto-refresh
 AppState.addEventListener('change', (state) => {
