@@ -2,7 +2,7 @@
 
 
 import { useState, useEffect } from 'react'
-import { supabase } from '../lib/supabase'
+import { supabase } from '../supabase'
 import { StyleSheet, View, Alert } from 'react-native'
 import { Button, Input } from '@rneui/themed'
 
@@ -11,15 +11,12 @@ export default function Account({ userId, email }: { userId: string; email?: str
   const [username, setUsername] = useState('')
   const [website, setWebsite] = useState('')
   const [avatarUrl, setAvatarUrl] = useState('')
-
   useEffect(() => {
     if (userId) getProfile()
   }, [userId])
-
   async function getProfile() {
     try {
       setLoading(true)
-
       let { data, error, status } = await supabase
         .from('profiles')
         .select(`username, website, avatar_url`)
@@ -28,7 +25,6 @@ export default function Account({ userId, email }: { userId: string; email?: str
       if (error && status !== 406) {
         throw error
       }
-
       if (data) {
         setUsername(data.username)
         setWebsite(data.website)
@@ -42,7 +38,6 @@ export default function Account({ userId, email }: { userId: string; email?: str
       setLoading(false)
     }
   }
-
   async function updateProfile({
     username,
     website,
@@ -54,7 +49,6 @@ export default function Account({ userId, email }: { userId: string; email?: str
   }) {
     try {
       setLoading(true)
-
       const updates = {
         id: userId,
         username,
@@ -62,9 +56,7 @@ export default function Account({ userId, email }: { userId: string; email?: str
         avatar_url,
         updated_at: new Date(),
       }
-
       let { error } = await supabase.from('profiles').upsert(updates)
-
       if (error) {
         throw error
       }
@@ -76,9 +68,10 @@ export default function Account({ userId, email }: { userId: string; email?: str
       setLoading(false)
     }
   }
-
   return (
     <View>
+      <View>
+      </View>
       <View style={[styles.verticallySpaced, styles.mt20]}>
         <Input label="Email" value={email} disabled />
       </View>
@@ -88,7 +81,6 @@ export default function Account({ userId, email }: { userId: string; email?: str
       <View style={styles.verticallySpaced}>
         <Input label="Website" value={website || ''} onChangeText={(text) => setWebsite(text)} />
       </View>
-
       <View style={[styles.verticallySpaced, styles.mt20]}>
         <Button
           title={loading ? 'Loading ...' : 'Update'}
@@ -96,14 +88,12 @@ export default function Account({ userId, email }: { userId: string; email?: str
           disabled={loading}
         />
       </View>
-
       <View style={styles.verticallySpaced}>
         <Button title="Sign Out" onPress={() => supabase.auth.signOut()} />
       </View>
     </View>
   )
 }
-
 const styles = StyleSheet.create({
   container: {
     marginTop: 40,

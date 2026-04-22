@@ -8,8 +8,8 @@ import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View, Button, Alert } from 'react-native';
-import { tasks } from "../data/tasks";
-import { supabase } from '../lib/supabase'
+import { tasks } from "../../../data/tasks";
+import { supabase } from '../../../supabase'
 
 
 // picks 5 random tasks from all categories
@@ -170,8 +170,8 @@ const Checkbox = () => {
       <Image 
         source={
           pressed
-          ? require('../../assets/images/checkmark_filled.png') 
-          : require('../../assets/images/checkmark_empty.png')} 
+          ? require('./checkmark_filled.png') 
+          : require('./checkmark_empty.png')} 
         style={{ width: 50, height: 50, alignSelf: 'center' }}
       />
     </Pressable>

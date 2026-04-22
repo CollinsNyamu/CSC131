@@ -1,47 +1,40 @@
-// index.tsx
-// This is the initial root / first screen
-
-import { globalStyles } from '@/components/globalStyles';
-import { Image } from 'expo-image';
-import { useRouter } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { tasks } from "../data/tasks";
-import { registerRootComponent } from 'expo';
-
-
+// src/app/index.tsx
+// This is the true root route — maps to URL "/"
 
 import { useState, useEffect } from 'react'
-import { supabase } from '../lib/supabase'
+import { View } from 'react-native'
+import { Session } from '@supabase/supabase-js'
+import { supabase } from '../supabase'  // adjust path to match your structure
 import Auth from '../components/Auth'
-import Account from '../app/Home'
+import Home from './(tabs)/Home/Home'  // point to Home.tsx inside its folder
 
-export default function Index() {
-  const [userId, setUserId] = useState<string | null>(null)
-  const [email, setEmail] = useState<string | undefined>(undefined)
+export default function App() {
+  const [session, setSession] = useState<Session | null | undefined>(undefined)
 
   useEffect(() => {
-    supabase.auth.getClaims().then(({ data }) => {
-      if (data?.claims) {
-        setUserId(data.claims.sub)
-        setEmail(data.claims.email)
-      }
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session)
     })
-  
-    supabase.auth.onAuthStateChange(async (_event, _session) => {
-      const { data } = await supabase.auth.getClaims()
-      if (data?.claims) {
-        setUserId(data.claims.sub)
-        setEmail(data.claims.email)
-      } else {
-        setUserId(null)
-        setEmail(undefined)
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setSession(session)
       }
-    })
+    )
+
+    return () => subscription.unsubscribe()
   }, [])
 
+  // Don't render anything while we're checking for a session
+  // This prevents a brief flash of the Auth screen on startup
+  if (session === undefined) return null
+
   return (
-    <View>
-      {userId ? <Account key={userId} userId={userId} email={email} /> : <Auth />}
+    <View style={{ flex: 1 }}>
+      {session?.user
+        ? <Home userId={session.user.id} email={session.user.email} />
+        : <Auth />
+      }
     </View>
   )
 }
