@@ -12,23 +12,6 @@ import { tasks } from "../../../data/tasks";
 import { supabase } from '../../../supabase';
 
 
-// picks 5 random tasks from all categories
-const getRandomTasks = (num: number) => {
-  const allTasks: { task: string; value: number }[] = [];
-
-  Object.keys(tasks).forEach((category) => {
-    tasks[category as keyof typeof tasks].forEach((t) => {
-      allTasks.push({
-        task: t,
-        value: Math.floor(Math.random() * 50) + 10,
-      });
-    });
-  });
-
-  const shuffled = allTasks.sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, num);
-};
-
 // Main
 export default function Home({ userId, email }: { userId: string; email?: string }) {
   const [loading, setLoading] = useState(true)
@@ -126,7 +109,7 @@ export default function Home({ userId, email }: { userId: string; email?: string
           <Task key={index} task={t.task} value={t.value} />
         ))}
       </View>
-      <View style={styles.verticallySpaced}>
+      <View style={homeStyles.signoutButton}>
         <Button title="Sign Out" onPress={() => supabase.auth.signOut()} />
       </View>
     </>
@@ -136,6 +119,23 @@ export default function Home({ userId, email }: { userId: string; email?: string
 
 
 
+// Pick a number of random tasks from all categories
+const getRandomTasks = (num: number) => {
+  const allTasks: { task: string; value: number }[] = [];
+
+  Object.keys(tasks).forEach((category) => {
+    tasks[category as keyof typeof tasks].forEach((t) => {
+      allTasks.push({
+        task: t,
+        value: Math.floor(Math.random() * 50) + 10,
+      });
+    });
+  });
+
+  const shuffled = allTasks.sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, num);
+};
+
 // Tasks
 type TaskProps = {
   task: string;
@@ -144,13 +144,13 @@ type TaskProps = {
 
 const Task = (props: TaskProps) => {
   return(
-  <View style={taskStyles.taskBackground}>
+  <View style={homeStyles.taskBackground}>
     <Checkbox />
-    <Text style={taskStyles.taskPoints}>
+    <Text style={homeStyles.taskPoints}>
         {props.value}
     </Text>
 
-    <Text style={taskStyles.taskText}>
+    <Text style={homeStyles.taskText}>
       {props.task}
     </Text>
 
@@ -198,7 +198,7 @@ const Clock = () => {
 };
 
 // Style sheet for home page
-const taskStyles = StyleSheet.create({
+const homeStyles = StyleSheet.create({
   // tasks
   taskBackground:{
     alignItems: 'center',
@@ -218,13 +218,11 @@ const taskStyles = StyleSheet.create({
   taskText:{
     color: '#8b8c89',
     justifyContent: 'center'
+  },
+  // logout
+  signoutButton:{
+      paddingTop: 4,
+      paddingBottom: 4,
+      alignSelf: 'stretch',
   }
-});
-
-const styles = StyleSheet.create({
-    verticallySpaced: {
-        paddingTop: 4,
-        paddingBottom: 4,
-        alignSelf: 'stretch',
-      }
 });
