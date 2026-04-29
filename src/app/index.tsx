@@ -1,37 +1,15 @@
-// index.tsx
-// This is the initial root / first screen
+// src/app/index.tsx
+// This is the true root route — maps to URL "/"
 
-import { globalStyles } from '@/components/globalStyles';
-import { Image } from 'expo-image';
-import { useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { tasks } from "../data/tasks";
+import { useState, useEffect } from 'react'
+import { View } from 'react-native'
+import { Session } from '@supabase/supabase-js'
+import { supabase } from '../supabase'  // adjust path to match your structure
+import Auth from '../components/Auth'
+import Home from './(tabs)/Home/Home'  // point to Home.tsx inside its folder
 
-// picks 5 random tasks from all categories
-const getRandomTasks = (num: number) => {
-  const allTasks: { task: string; value: number }[] = [];
-
-  Object.keys(tasks).forEach((category) => {
-    tasks[category as keyof typeof tasks].forEach((t) => {
-      allTasks.push({
-        task: t,
-        value: Math.floor(Math.random() * 50) + 10,
-      });
-    });
-  });
-
-  const shuffled = allTasks.sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, num);
-};
-
-// Main
-export default function Index() {
-  const router = useRouter();
-
-  const [dailyTasks, setDailyTasks] = useState<
-    { task: string; value: number }[]
-  >([]);
+export default function App() {
+  const [session, setSession] = useState<Session | null | undefined>(undefined)
 
   useEffect(() => {
     const generated = getRandomTasks(5);
@@ -143,3 +121,29 @@ const taskStyles = StyleSheet.create({
     justifyContent: 'center'
   }
 });
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session)
+    })
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setSession(session)
+      }
+    )
+
+    return () => subscription.unsubscribe()
+  }, [])
+
+  // Don't render anything while we're checking for a session
+  // This prevents a brief flash of the Auth screen on startup
+  if (session === undefined) return null
+
+  return (
+    <View style={{ flex: 1 }}>
+      {session?.user
+        ? <Home userId={session.user.id} email={session.user.email} />
+        : <Auth />
+      }
+    </View>
+  )
+}

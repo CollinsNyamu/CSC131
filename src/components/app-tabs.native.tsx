@@ -6,8 +6,12 @@ import { Icon, Label, NativeTabs } from 'expo-router/unstable-native-tabs';
 export default function AppTabs() {
   return (
     <NativeTabs>
-      <NativeTabs.Trigger name="index">
+      <NativeTabs.Trigger name="Home">
         <Label>Home</Label>
+        <Icon src={require('../../assets/images/icon.png')} />
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="index">
+        <Label>Login</Label>
         <Icon src={require('../../assets/images/icon.png')} />
       </NativeTabs.Trigger>
 
