@@ -10,6 +10,8 @@ import React, { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View, Button, Alert } from 'react-native';
 import { tasks } from "../../../data/tasks";
 import { supabase } from '../../../supabase'
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 
 // picks 5 random tasks from all categories
@@ -107,9 +109,26 @@ export default function Home({ userId, email }: { userId: string; email?: string
   >([]);
 
   useEffect(() => {
-    const generated = getRandomTasks(5);
-    setDailyTasks(generated);
-  }, []);
+  const loadTasks = async () => {
+    const today = new Date().toDateString();
+
+    const savedDate = await AsyncStorage.getItem(`date-${userId}`);
+    const savedTasks = await AsyncStorage.getItem(`tasks-${userId}`);
+
+    if (savedDate === today && savedTasks) {
+      setDailyTasks(JSON.parse(savedTasks));
+    } else {
+      const newTasks = getRandomTasks(5);
+      setDailyTasks(newTasks);
+
+      await AsyncStorage.setItem(`tasks-${userId}`, JSON.stringify(newTasks));
+      await AsyncStorage.setItem(`date-${userId}`, today);
+    }
+  };
+
+  loadTasks();
+}, []);
+
 
 
   return(
