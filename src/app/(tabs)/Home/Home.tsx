@@ -7,9 +7,9 @@ import { globalStyles } from '@/components/globalStyles';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Text, View, Button, Alert } from 'react-native';
+import { Alert, Button, Pressable, StyleSheet, Text, View } from 'react-native';
 import { tasks } from "../../../data/tasks";
-import { supabase } from '../../../supabase'
+import { supabase } from '../../../supabase';
 
 
 // picks 5 random tasks from all categories
@@ -202,7 +202,7 @@ const taskStyles = StyleSheet.create({
   // tasks
   taskBackground:{
     alignItems: 'center',
-    backgroundColor: 'lightgreen',
+    backgroundColor: '#6096ba',
     flexDirection: 'row',
     justifyContent: 'flex-start',
     columnGap: 20,
@@ -211,16 +211,15 @@ const taskStyles = StyleSheet.create({
     flexWrap: 'wrap'
   },
   taskPoints:{
-    color: 'purple',
+    color: '#274c77',
     fontSize: 20,
     justifyContent: 'flex-end'
   },
   taskText:{
+    color: '#8b8c89',
     justifyContent: 'center'
-  },
-
-
-})
+  }
+});
 
 const styles = StyleSheet.create({
     verticallySpaced: {
