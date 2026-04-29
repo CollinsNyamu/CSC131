@@ -12,7 +12,10 @@ export default function UserProfile() {
             </View>
 
             <View style={globalStyles.mainBackground}>                
-                <Image source={require('../../assets/images/icon.png')} style={{ width: 100, height: 100, alignSelf: 'center' }} />
+                <Image 
+                    source={require('../../assets/images/icon.png')} 
+                    style={{ width: 100, height: 100, alignSelf: 'center' }}
+                />
 
                 <Text>
                     Name
@@ -23,5 +26,5 @@ export default function UserProfile() {
                 </Text>
             </View>
         </>
-    )
+    );
 }

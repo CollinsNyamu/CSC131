@@ -125,7 +125,7 @@ const taskStyles = StyleSheet.create({
   // tasks
   taskBackground:{
     alignItems: 'center',
-    backgroundColor: 'lightgreen',
+    backgroundColor: '#6096ba',
     flexDirection: 'row',
     justifyContent: 'flex-start',
     columnGap: 20,
@@ -134,11 +134,12 @@ const taskStyles = StyleSheet.create({
     flexWrap: 'wrap'
   },
   taskPoints:{
-    color: 'purple',
+    color: '#274c77',
     fontSize: 20,
     justifyContent: 'flex-end'
   },
   taskText:{
+    color: '#8b8c89',
     justifyContent: 'center'
   }
 });
