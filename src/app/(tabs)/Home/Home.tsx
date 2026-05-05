@@ -16,19 +16,26 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // picks 5 random tasks from all categories
 const getRandomTasks = (num: number) => {
-  const allTasks: { task: string; value: number }[] = [];
+  const allTasks: { task: string; value: number; difficulty: string }[] = [];
 
   Object.keys(tasks).forEach((category) => {
-    tasks[category as keyof typeof tasks].forEach((t) => {
-      allTasks.push({
-        task: t,
-        value: Math.floor(Math.random() * 50) + 10,
-      });
+  tasks[category as keyof typeof tasks].forEach((t) => {
+    allTasks.push({
+      task: t.difficulty === "hard" ? "🔥 " + t.text : t.text,
+      value: t.points,
+      difficulty: t.difficulty,
     });
   });
+});
+  const hardTasks = allTasks.filter(t => t.difficulty === "hard");
+  const normalTasks = allTasks.filter(t => t.difficulty !== "hard");
 
-  const shuffled = allTasks.sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, num);
+  const selected = [
+  hardTasks[Math.floor(Math.random() * hardTasks.length)],
+  ...normalTasks.sort(() => 0.5 - Math.random()).slice(0, num - 1)
+];
+
+return selected;
 };
 
 // Main
@@ -105,8 +112,8 @@ export default function Home({ userId, email }: { userId: string; email?: string
   const router = useRouter();
 
   const [dailyTasks, setDailyTasks] = useState<
-    { task: string; value: number }[]
-  >([]);
+  { task: string; value: number; difficulty: string }[]
+>([]);
 
   useEffect(() => {
   const loadTasks = async () => {
