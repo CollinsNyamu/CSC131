@@ -1,10 +1,9 @@
 import { globalStyles } from '@/components/globalStyles';
+import { Button, Input } from '@rneui/themed';
 import { Image } from 'expo-image';
-import { Text, View } from 'react-native';
-import { useState, useEffect } from 'react'
-import { supabase } from '../../../supabase'
-import { StyleSheet, Alert } from 'react-native'
-import { Button, Input } from '@rneui/themed'
+import { useEffect, useState } from 'react';
+import { Alert, StyleSheet, Text, View } from 'react-native';
+import { supabase } from '../../../supabase';
 
 export default function UserProfile({ userId, email }: { userId: string; email?: string }) {
     const [loading, setLoading] = useState(true)
@@ -79,17 +78,17 @@ export default function UserProfile({ userId, email }: { userId: string; email?:
     return (
         <>
          <View>
-      <View style={[styles.verticallySpaced, styles.mt20]}>
+      <View style={[profileStyles.verticallySpaced, profileStyles.mt20]}>
         <Input label="Email" value={email} disabled />
       </View>
-      <View style={styles.verticallySpaced}>
+      <View style={profileStyles.verticallySpaced}>
         <Input label="Username" value={username || ''} onChangeText={(text) => setUsername(text)} />
       </View>
-      <View style={styles.verticallySpaced}>
+      <View style={profileStyles.verticallySpaced}>
         <Input label="Website" value={website || ''} onChangeText={(text) => setWebsite(text)} />
       </View>
 
-      <View style={[styles.verticallySpaced, styles.mt20]}>
+      <View style={[profileStyles.verticallySpaced, profileStyles.mt20]}>
         <Button
           title={loading ? 'Loading ...' : 'Update'}
           onPress={() => updateProfile({ username, website, avatar_url: avatarUrl })}
@@ -97,19 +96,32 @@ export default function UserProfile({ userId, email }: { userId: string; email?:
         />
       </View>
 
-      <View style={styles.verticallySpaced}>
+      <View style={profileStyles.verticallySpaced}>
         <Button title="Sign Out" onPress={() => supabase.auth.signOut()} />
       </View>
     </View>
- 
-        </>
-        
-        
-        
+            <View style={globalStyles.headerBackground}>
+                <Text style={globalStyles.headerText}>
+                    User Profile
+                </Text>
+            </View>
+
+            <View style={globalStyles.mainBackground}>                
+                <Image source={require('./icon.png')} style={{ width: 100, height: 100, alignSelf: 'center' }} />
+
+                <Text>
+                    Name
+                </Text>
+
+                <Text>
+                    Details
+                </Text>
+            </View>
+        </>   
     )
 }
 
-const styles = StyleSheet.create({
+const profileStyles = StyleSheet.create({
     container: {
       marginTop: 40,
       padding: 12,

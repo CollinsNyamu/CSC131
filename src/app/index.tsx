@@ -1,12 +1,12 @@
 // src/app/index.tsx
 // This is the true root route — maps to URL "/"
 
-import { useState, useEffect } from 'react'
-import { View } from 'react-native'
 import { Session } from '@supabase/supabase-js'
-import { supabase } from '../supabase'  // adjust path to match your structure
+import { useEffect, useState } from 'react'
+import { View } from 'react-native'
 import Auth from '../components/Auth'
-import Home from './(tabs)/Home'  // point to Home.tsx inside its folder
+import { supabase } from '../supabase'; // adjust path to match your structure
+import Home from './(tabs)/Home/index'; // point to Home.tsx inside its folder
 
 export default function App() {
   const [session, setSession] = useState<Session | null | undefined>(undefined)

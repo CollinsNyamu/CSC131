@@ -4,12 +4,13 @@
 //Temp. add Log Out button to home screen till nav done
 
 import { globalStyles } from '@/components/globalStyles';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Text, View, Button, Alert } from 'react-native';
+import { Alert, Button, Pressable, StyleSheet, Text, View } from 'react-native';
 import { tasks } from "../../../data/tasks";
-import { supabase } from '../../../supabase'
+import { supabase } from '../../../supabase';
 
 
 // picks 5 random tasks from all categories
@@ -19,33 +20,7 @@ const seededRandom = (seed: number) => {
   return x - Math.floor(x);
 };
 
-const getRandomTasks = (num: number, userId: string) => {
-  const allTasks: { task: string; value: number }[] = [];
 
-  const today = new Date();
-  const dateSeed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
-
-
-  const userSeed = userId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  const seed = dateSeed + userSeed;
-  let counter = 0; // ← single counter across all categories
-
-  Object.keys(tasks).forEach((category) => {
-    tasks[category as keyof typeof tasks].forEach((t) => {
-      allTasks.push({
-        task: t,
-        value: Math.floor(seededRandom(seed + counter) * 50) + 10, // ← use counter
-      });
-      counter++; // ← increment after each task
-    });
-  });
-
-  const shuffled = allTasks.sort((a, b) => 
-    seededRandom(seed + allTasks.indexOf(a)) - seededRandom(seed + allTasks.indexOf(b))
-  );
-
-  return shuffled.slice(0, num);
-};
 
 // Main
 export default function Home({ userId, email }: { userId: string; email?: string }) {
@@ -122,13 +97,30 @@ export default function Home({ userId, email }: { userId: string; email?: string
   const router = useRouter();
 
   const [dailyTasks, setDailyTasks] = useState<
-    { task: string; value: number }[]
-  >([]);
+  { task: string; value: number; difficulty: string }[]
+>([]);
 
   useEffect(() => {
-    const generated = getRandomTasks(5,userId);
-    setDailyTasks(generated);
-  }, []);
+  const loadTasks = async () => {
+    const today = new Date().toDateString();
+
+    const savedDate = await AsyncStorage.getItem(`date-${userId}`);
+    const savedTasks = await AsyncStorage.getItem(`tasks-${userId}`);
+
+    if (savedDate === today && savedTasks) {
+      setDailyTasks(JSON.parse(savedTasks));
+    } else {
+      const newTasks = getRandomTasks(5);
+      setDailyTasks(newTasks);
+
+      await AsyncStorage.setItem(`tasks-${userId}`, JSON.stringify(newTasks));
+      await AsyncStorage.setItem(`date-${userId}`, today);
+    }
+  };
+
+  loadTasks();
+}, []);
+
 
 
   return(
@@ -145,8 +137,7 @@ export default function Home({ userId, email }: { userId: string; email?: string
           <Task key={index} task={t.task} value={t.value} userId={userId} />
         ))}
       </View>
-
-      <View style={styles.verticallySpaced}>
+      <View style={homeStyles.signoutButton}>
         <Button title="Sign Out" onPress={() => supabase.auth.signOut()} />
       </View>
   
@@ -166,13 +157,13 @@ type TaskProps = {
 
 const Task = (props: TaskProps) => {
   return(
-  <View style={taskStyles.taskBackground}>
+  <View style={homeStyles.taskBackground}>
     <Checkbox value={props.value} userId={props.userId}/>
-    <Text style={taskStyles.taskPoints}>
+    <Text style={homeStyles.taskPoints}>
         {props.value}
     </Text>
 
-    <Text style={taskStyles.taskText}>
+    <Text style={homeStyles.taskText}>
       {props.task}
     </Text>
 
@@ -227,6 +218,37 @@ const Checkbox = ({ value, userId }: CheckboxProps) => {
   );
 };
 
+// Get a random task
+const getRandomTask = () => {
+  
+}
+
+// Pick a number of random tasks from all categories
+const getRandomTasks = (num: number) => {
+  const allTasks: { task: string; value: number; difficulty: string }[] = [];
+
+  Object.keys(tasks).forEach((category) => {
+  tasks[category as keyof typeof tasks].forEach((t) => {
+    allTasks.push({
+      task: t.difficulty === "hard" ? "🔥 " + t.text : t.text,
+      value: t.points,
+      difficulty: t.difficulty,
+    });
+  });
+});
+  const hardTasks = allTasks.filter(t => t.difficulty === "hard");
+  const normalTasks = allTasks.filter(t => t.difficulty !== "hard");
+
+  const selected = [
+  hardTasks[Math.floor(Math.random() * hardTasks.length)],
+  ...normalTasks.sort(() => 0.5 - Math.random()).slice(0, num - 1)
+];
+
+return selected;
+};
+
+
+
 // Clock
 const Clock = () => {
   const [time, setTime] = useState(new Date().toTimeString());
@@ -246,12 +268,13 @@ const Clock = () => {
   );
 };
 
+
 // Style sheet for home page
-const taskStyles = StyleSheet.create({
+const homeStyles = StyleSheet.create({
   // tasks
   taskBackground:{
     alignItems: 'center',
-    backgroundColor: 'lightgreen',
+    backgroundColor: '#6096ba',
     flexDirection: 'row',
     justifyContent: 'flex-start',
     columnGap: 20,
@@ -260,21 +283,18 @@ const taskStyles = StyleSheet.create({
     flexWrap: 'wrap'
   },
   taskPoints:{
-    color: 'purple',
+    color: '#274c77',
     fontSize: 20,
     justifyContent: 'flex-end'
   },
   taskText:{
+    color: '#black',
     justifyContent: 'center'
   },
-
-
-})
-
-const styles = StyleSheet.create({
-    verticallySpaced: {
-        paddingTop: 4,
-        paddingBottom: 4,
-        alignSelf: 'stretch',
-      }
+  // logout
+  signoutButton:{
+      paddingTop: 4,
+      paddingBottom: 4,
+      alignSelf: 'stretch',
+  }
 });
