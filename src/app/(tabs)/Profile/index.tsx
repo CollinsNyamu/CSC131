@@ -101,23 +101,7 @@ export default function UserProfile({ userId, email }: { userId: string; email?:
         <Button title="Sign Out" onPress={() => supabase.auth.signOut()} />
       </View>
     </View>
-            <View style={globalStyles.headerBackground}>
-                <Text style={globalStyles.headerText}>
-                    User Profile
-                </Text>
-            </View>
-
-            <View style={globalStyles.mainBackground}>                
-                <Image source={require('./icon.png')} style={{ width: 100, height: 100, alignSelf: 'center' }} />
-
-                <Text>
-                    Name
-                </Text>
-
-                <Text>
-                    Details
-                </Text>
-            </View>
+ 
         </>
         
         

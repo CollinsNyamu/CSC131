@@ -35,6 +35,7 @@ export default function Home({ userId, email }: { userId: string; email?: string
   const [username, setUsername] = useState('')
   const [website, setWebsite] = useState('')
   const [avatarUrl, setAvatarUrl] = useState('')
+  
 
   useEffect(() => {
     if (userId) getProfile()
@@ -123,12 +124,14 @@ export default function Home({ userId, email }: { userId: string; email?: string
 
       <View style={globalStyles.mainBackground}>
         {dailyTasks.map((t, index) => (
-          <Task key={index} task={t.task} value={t.value} />
+          <Task key={index} task={t.task} value={t.value} userId={userId} />
         ))}
       </View>
+
       <View style={styles.verticallySpaced}>
         <Button title="Sign Out" onPress={() => supabase.auth.signOut()} />
       </View>
+  
     </>
     
   );
@@ -140,12 +143,13 @@ export default function Home({ userId, email }: { userId: string; email?: string
 type TaskProps = {
   task: string;
   value: number;
+  userId: string;
 };
 
 const Task = (props: TaskProps) => {
   return(
   <View style={taskStyles.taskBackground}>
-    <Checkbox />
+    <Checkbox value={props.value} userId={props.userId}/>
     <Text style={taskStyles.taskPoints}>
         {props.value}
     </Text>
@@ -158,15 +162,42 @@ const Task = (props: TaskProps) => {
   );
 };
 
-const Checkbox = () => {
+type CheckboxProps = {
+  value: number;
+  userId: string;
+};
+
+const Checkbox = ({ value, userId }: CheckboxProps) => {
   const [pressed, setPressed] = useState(false);
 
+  const handlePress = async () => {
+    if (!pressed) {
+      // Checking — add points
+      console.log('Sending', `userId: ${userId}, points: ${value}`)
+      const { error } = await supabase.rpc('add_points', {
+        user_id: userId,
+        points_to_add: value,
+      });
+      if (error) {
+        Alert.alert('Error adding points', error.message);
+        return;
+      }
+    } else {
+      // Unchecking — remove points
+      const { error } = await supabase.rpc('add_points', {
+        user_id: userId,
+        points_to_add: -value,  // ← negative value subtracts
+      });
+      if (error) {
+        Alert.alert('Error removing points', error.message);
+        return;
+      }
+    }
+    setPressed(!pressed);
+  };
+
   return(
-    <Pressable
-      onPress={() => {
-        setPressed(!pressed);
-      }}
-    >
+    <Pressable onPress={handlePress}>
       <Image 
         source={
           pressed
