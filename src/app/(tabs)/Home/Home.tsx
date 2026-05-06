@@ -4,12 +4,15 @@
 //Temp. add Log Out button to home screen till nav done
 
 import { globalStyles } from '@/components/globalStyles';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Alert, Button, Pressable, StyleSheet, Text, View } from 'react-native';
 import { tasks } from "../../../data/tasks";
 import { supabase } from '../../../supabase';
+
+
 
 
 // Main
@@ -86,13 +89,30 @@ export default function Home({ userId, email }: { userId: string; email?: string
   const router = useRouter();
 
   const [dailyTasks, setDailyTasks] = useState<
-    { task: string; value: number }[]
-  >([]);
+  { task: string; value: number; difficulty: string }[]
+>([]);
 
   useEffect(() => {
-    const generated = getRandomTasks(5);
-    setDailyTasks(generated);
-  }, []);
+  const loadTasks = async () => {
+    const today = new Date().toDateString();
+
+    const savedDate = await AsyncStorage.getItem(`date-${userId}`);
+    const savedTasks = await AsyncStorage.getItem(`tasks-${userId}`);
+
+    if (savedDate === today && savedTasks) {
+      setDailyTasks(JSON.parse(savedTasks));
+    } else {
+      const newTasks = getRandomTasks(5);
+      setDailyTasks(newTasks);
+
+      await AsyncStorage.setItem(`tasks-${userId}`, JSON.stringify(newTasks));
+      await AsyncStorage.setItem(`date-${userId}`, today);
+    }
+  };
+
+  loadTasks();
+}, []);
+
 
 
   return(
@@ -168,20 +188,28 @@ const getRandomTask = () => {
 
 // Pick a number of random tasks from all categories
 const getRandomTasks = (num: number) => {
-  const allTasks: { task: string; value: number }[] = [];
+  const allTasks: { task: string; value: number; difficulty: string }[] = [];
 
   Object.keys(tasks).forEach((category) => {
-    tasks[category as keyof typeof tasks].forEach((t) => {
-      allTasks.push({
-        task: t,
-        value: Math.floor(Math.random() * 50) + 10,
-      });
+  tasks[category as keyof typeof tasks].forEach((t) => {
+    allTasks.push({
+      task: t.difficulty === "hard" ? "🔥 " + t.text : t.text,
+      value: t.points,
+      difficulty: t.difficulty,
     });
   });
+});
+  const hardTasks = allTasks.filter(t => t.difficulty === "hard");
+  const normalTasks = allTasks.filter(t => t.difficulty !== "hard");
 
-  const shuffled = allTasks.sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, num);
+  const selected = [
+  hardTasks[Math.floor(Math.random() * hardTasks.length)],
+  ...normalTasks.sort(() => 0.5 - Math.random()).slice(0, num - 1)
+];
+
+return selected;
 };
+
 
 
 // Clock
