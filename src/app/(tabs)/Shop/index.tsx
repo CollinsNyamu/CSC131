@@ -16,5 +16,18 @@ export default function PointsShop() {
                 </Text>
             </View>
         </>
-    )
+    );
+}
+
+type itemProps = {
+    name: string
+    cost: number
+}
+
+const Item = (props: itemProps) => {
+    return (
+        <View>
+
+        </View>
+    );
 }

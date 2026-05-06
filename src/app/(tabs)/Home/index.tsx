@@ -4,39 +4,23 @@
 //Temp. add Log Out button to home screen till nav done
 
 import { globalStyles } from '@/components/globalStyles';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Text, View, Button, Alert } from 'react-native';
+import { Alert, Button, Pressable, StyleSheet, Text, View } from 'react-native';
 import { tasks } from "../../../data/tasks";
-import { supabase } from '../../../supabase'
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import { supabase } from '../../../supabase';
 
 
 // picks 5 random tasks from all categories
-const getRandomTasks = (num: number) => {
-  const allTasks: { task: string; value: number; difficulty: string }[] = [];
 
-  Object.keys(tasks).forEach((category) => {
-  tasks[category as keyof typeof tasks].forEach((t) => {
-    allTasks.push({
-      task: t.difficulty === "hard" ? "🔥 " + t.text : t.text,
-      value: t.points,
-      difficulty: t.difficulty,
-    });
-  });
-});
-  const hardTasks = allTasks.filter(t => t.difficulty === "hard");
-  const normalTasks = allTasks.filter(t => t.difficulty !== "hard");
-
-  const selected = [
-  hardTasks[Math.floor(Math.random() * hardTasks.length)],
-  ...normalTasks.sort(() => 0.5 - Math.random()).slice(0, num - 1)
-];
-
-return selected;
+const seededRandom = (seed: number) => {
+  const x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
 };
+
+
 
 // Main
 export default function Home({ userId, email }: { userId: string; email?: string }) {
@@ -44,6 +28,7 @@ export default function Home({ userId, email }: { userId: string; email?: string
   const [username, setUsername] = useState('')
   const [website, setWebsite] = useState('')
   const [avatarUrl, setAvatarUrl] = useState('')
+  
 
   useEffect(() => {
     if (userId) getProfile()
@@ -149,12 +134,13 @@ export default function Home({ userId, email }: { userId: string; email?: string
 
       <View style={globalStyles.mainBackground}>
         {dailyTasks.map((t, index) => (
-          <Task key={index} task={t.task} value={t.value} />
+          <Task key={index} task={t.task} value={t.value} userId={userId} />
         ))}
       </View>
-      <View style={styles.verticallySpaced}>
+      <View style={homeStyles.signoutButton}>
         <Button title="Sign Out" onPress={() => supabase.auth.signOut()} />
       </View>
+  
     </>
     
   );
@@ -166,17 +152,18 @@ export default function Home({ userId, email }: { userId: string; email?: string
 type TaskProps = {
   task: string;
   value: number;
+  userId: string;
 };
 
 const Task = (props: TaskProps) => {
   return(
-  <View style={taskStyles.taskBackground}>
-    <Checkbox />
-    <Text style={taskStyles.taskPoints}>
+  <View style={homeStyles.taskBackground}>
+    <Checkbox value={props.value} userId={props.userId}/>
+    <Text style={homeStyles.taskPoints}>
         {props.value}
     </Text>
 
-    <Text style={taskStyles.taskText}>
+    <Text style={homeStyles.taskText}>
       {props.task}
     </Text>
 
@@ -184,15 +171,42 @@ const Task = (props: TaskProps) => {
   );
 };
 
-const Checkbox = () => {
+type CheckboxProps = {
+  value: number;
+  userId: string;
+};
+
+const Checkbox = ({ value, userId }: CheckboxProps) => {
   const [pressed, setPressed] = useState(false);
 
+  const handlePress = async () => {
+    if (!pressed) {
+      // Checking — add points
+      console.log('Sending', `userId: ${userId}, points: ${value}`)
+      const { error } = await supabase.rpc('add_points', {
+        user_id: userId,
+        points_to_add: value,
+      });
+      if (error) {
+        Alert.alert('Error adding points', error.message);
+        return;
+      }
+    } else {
+      // Unchecking — remove points
+      const { error } = await supabase.rpc('add_points', {
+        user_id: userId,
+        points_to_add: -value,  // ← negative value subtracts
+      });
+      if (error) {
+        Alert.alert('Error removing points', error.message);
+        return;
+      }
+    }
+    setPressed(!pressed);
+  };
+
   return(
-    <Pressable
-      onPress={() => {
-        setPressed(!pressed);
-      }}
-    >
+    <Pressable onPress={handlePress}>
       <Image 
         source={
           pressed
@@ -203,6 +217,37 @@ const Checkbox = () => {
     </Pressable>
   );
 };
+
+// Get a random task
+const getRandomTask = () => {
+  
+}
+
+// Pick a number of random tasks from all categories
+const getRandomTasks = (num: number) => {
+  const allTasks: { task: string; value: number; difficulty: string }[] = [];
+
+  Object.keys(tasks).forEach((category) => {
+  tasks[category as keyof typeof tasks].forEach((t) => {
+    allTasks.push({
+      task: t.difficulty === "hard" ? "🔥 " + t.text : t.text,
+      value: t.points,
+      difficulty: t.difficulty,
+    });
+  });
+});
+  const hardTasks = allTasks.filter(t => t.difficulty === "hard");
+  const normalTasks = allTasks.filter(t => t.difficulty !== "hard");
+
+  const selected = [
+  hardTasks[Math.floor(Math.random() * hardTasks.length)],
+  ...normalTasks.sort(() => 0.5 - Math.random()).slice(0, num - 1)
+];
+
+return selected;
+};
+
+
 
 // Clock
 const Clock = () => {
@@ -223,12 +268,13 @@ const Clock = () => {
   );
 };
 
+
 // Style sheet for home page
-const taskStyles = StyleSheet.create({
+const homeStyles = StyleSheet.create({
   // tasks
   taskBackground:{
     alignItems: 'center',
-    backgroundColor: 'lightgreen',
+    backgroundColor: '#6096ba',
     flexDirection: 'row',
     justifyContent: 'flex-start',
     columnGap: 20,
@@ -237,21 +283,18 @@ const taskStyles = StyleSheet.create({
     flexWrap: 'wrap'
   },
   taskPoints:{
-    color: 'purple',
+    color: '#274c77',
     fontSize: 20,
     justifyContent: 'flex-end'
   },
   taskText:{
+    color: '#black',
     justifyContent: 'center'
   },
-
-
-})
-
-const styles = StyleSheet.create({
-    verticallySpaced: {
-        paddingTop: 4,
-        paddingBottom: 4,
-        alignSelf: 'stretch',
-      }
+  // logout
+  signoutButton:{
+      paddingTop: 4,
+      paddingBottom: 4,
+      alignSelf: 'stretch',
+  }
 });

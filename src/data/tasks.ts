@@ -53,4 +53,4 @@ export const tasks = {
     { text: "meet someone new", difficulty: "hard", points: 60 },
     { text: "give a compliment", difficulty: "easy", points: 10 }
   ]
-};
+}
