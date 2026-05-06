@@ -53,4 +53,4 @@ export const tasks = {
     "meet someone new",
     "give a compliment"
   ]
-};
+}

@@ -119,23 +119,6 @@ export default function Home({ userId, email }: { userId: string; email?: string
 
 
 
-// Pick a number of random tasks from all categories
-const getRandomTasks = (num: number) => {
-  const allTasks: { task: string; value: number }[] = [];
-
-  Object.keys(tasks).forEach((category) => {
-    tasks[category as keyof typeof tasks].forEach((t) => {
-      allTasks.push({
-        task: t,
-        value: Math.floor(Math.random() * 50) + 10,
-      });
-    });
-  });
-
-  const shuffled = allTasks.sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, num);
-};
-
 // Tasks
 type TaskProps = {
   task: string;
@@ -178,6 +161,29 @@ const Checkbox = () => {
   );
 };
 
+// Get a random task
+const getRandomTask = () => {
+  
+}
+
+// Pick a number of random tasks from all categories
+const getRandomTasks = (num: number) => {
+  const allTasks: { task: string; value: number }[] = [];
+
+  Object.keys(tasks).forEach((category) => {
+    tasks[category as keyof typeof tasks].forEach((t) => {
+      allTasks.push({
+        task: t,
+        value: Math.floor(Math.random() * 50) + 10,
+      });
+    });
+  });
+
+  const shuffled = allTasks.sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, num);
+};
+
+
 // Clock
 const Clock = () => {
   const [time, setTime] = useState(new Date().toTimeString());
@@ -196,6 +202,7 @@ const Clock = () => {
     </Text>
   );
 };
+
 
 // Style sheet for home page
 const homeStyles = StyleSheet.create({
