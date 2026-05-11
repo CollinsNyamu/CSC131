@@ -20,6 +20,10 @@ export default function Auth() {
     setLoading(false)
   }
   async function signUpWithEmail() {
+    if (!email || !password) {
+      Alert.alert('Please enter both email and password');
+      return;
+    }
     setLoading(true)
     const { error } = await supabase.auth.signUp({
       email: email,
