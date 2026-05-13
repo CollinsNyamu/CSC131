@@ -14,29 +14,97 @@ export default function App() {
   const [session, setSession] = useState<Session | null | undefined>(undefined)
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-    })
+    const timer = setInterval(() => {
+      setTime(new Date().toLocaleString());
+    }, 1000);
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setSession(session)
-      }
-    )
+    return () => clearInterval(timer); // Cleanup on component unmount
+  }, []);
 
-    return () => subscription.unsubscribe()
-  }, [])
+  return(
+    <Text>
+      {time}
+    </Text>
+  );
+};
 
-  // Don't render anything while we're checking for a session
-  // This prevents a brief flash of the Auth screen on startup
-  if (session === undefined) return null
+// Style sheet
+const styles = StyleSheet.create({
+  // header
+  headerBackground:{
+    flex: 1,
+    backgroundColor: 'lightblue',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerText:{
+    fontSize: 40
+  },
+  // main background
+  mainBackground:{
+    flex: 7,
+    backgroundColor: 'turquoise',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    rowGap: 20,
+    padding: 20
+  },
+  // tasks
+  taskBackground:{
+    alignItems: 'center',
+    backgroundColor: 'lightgreen',
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    columnGap: 20,
+    width: '90%',
+    padding: 10,
+    flexWrap: 'wrap'
+  },
+  taskPoints:{
+    color: 'purple',
+    fontSize: 20,
+    justifyContent: 'flex-end'
+  },
+  taskText:{
+    justifyContent: 'center'
+  }
+});
+
+// Clock - Countdown to midnight
+function getSecondsUntilMidnight(): number {
+  const now = new Date();
+  const midnight = new Date();
+  midnight.setHours(24, 0, 0, 0);
+  return Math.floor((midnight.getTime() - now.getTime()) / 1000);
+}
+
+const Clock = () => {
+  const [timeLeft, setTimeLeft] = useState(getSecondsUntilMidnight());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) {
+          // TODO: trigger task reset here later
+          return getSecondsUntilMidnight();
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  const hours = Math.floor(timeLeft / 3600);
+  const minutes = Math.floor((timeLeft % 3600) / 60);
+  const seconds = timeLeft % 60;
+  const hh = String(hours).padStart(2, '0');
+  const mm = String(minutes).padStart(2, '0');
+  const ss = String(seconds).padStart(2, '0');
 
   return (
-    <View style={{ flex: 1 }}>
-      {session?.user
-        ? <Home userId={session.user.id} email={session.user.email} />
-        : <Auth />
-      }
-    </View>
-  )
-}
+    <Text style={{ fontSize: 20 }}>
+      {hh}:{mm}:{ss}
+    </Text>
+  );
+};
