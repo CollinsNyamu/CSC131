@@ -13,15 +13,6 @@ import { tasks } from "../../../data/tasks";
 import { supabase } from '../../../supabase';
 
 
-// picks 5 random tasks from all categories
-
-const seededRandom = (seed: number) => {
-  const x = Math.sin(seed) * 10000;
-  return x - Math.floor(x);
-};
-
-
-
 // Main
 export default function Home({ userId, email }: { userId: string; email?: string }) {
   const [loading, setLoading] = useState(true)
@@ -29,71 +20,6 @@ export default function Home({ userId, email }: { userId: string; email?: string
   const [website, setWebsite] = useState('')
   const [avatarUrl, setAvatarUrl] = useState('')
   
-
-  useEffect(() => {
-    if (userId) getProfile()
-  }, [userId])
-
-  async function getProfile() {
-    try {
-      setLoading(true)
-
-      let { data, error, status } = await supabase
-        .from('profiles')
-        .select(`username, website, avatar_url`)
-        .eq('id', userId)
-        .single()
-      if (error && status !== 406) {
-        throw error
-      }
-
-      if (data) {
-        setUsername(data.username)
-        setWebsite(data.website)
-        setAvatarUrl(data.avatar_url)
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        Alert.alert(error.message)
-      }
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  async function updateProfile({
-    username,
-    website,
-    avatar_url,
-  }: {
-    username: string
-    website: string
-    avatar_url: string
-  }) {
-    try {
-      setLoading(true)
-
-      const updates = {
-        id: userId,
-        username,
-        website,
-        avatar_url,
-        updated_at: new Date(),
-      }
-
-      let { error } = await supabase.from('profiles').upsert(updates)
-
-      if (error) {
-        throw error
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        Alert.alert(error.message)
-      }
-    } finally {
-      setLoading(false)
-    }
-  }
   const router = useRouter();
 
   const [dailyTasks, setDailyTasks] = useState<
@@ -217,11 +143,6 @@ const Checkbox = ({ value, userId }: CheckboxProps) => {
     </Pressable>
   );
 };
-
-// Get a random task
-const getRandomTask = () => {
-  
-}
 
 // Pick a number of random tasks from all categories
 const getRandomTasks = (num: number) => {
