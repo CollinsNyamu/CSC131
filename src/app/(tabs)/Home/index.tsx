@@ -1,4 +1,4 @@
-// Home screen
+
 
 //Temp. add Log Out button to home screen till nav done
 
@@ -12,7 +12,7 @@ import { supabase } from '../../../supabase';
 
 
 
-// Main
+// Home screen
 export default function Home({ userId, email }: { userId: string; email?: string }) {
   
   useEffect(() => {
@@ -105,78 +105,69 @@ async function getProfile(userId: string) {
 }
 
 
-  async function updateProfile({
-    username,
-    website,
-    avatar_url,
-  }: {
-    username: string
-    website: string
-    avatar_url: string
-  }) {
-    try {
-      setLoading(true)
+async function updateProfile({
+  username,
+  website,
+  avatar_url,
+}: {
+  username: string
+  website: string
+  avatar_url: string
+}) {
+  try {
+    setLoading(true)
 
-      const updates = {
-        id: userId,
-        username,
-        website,
-        avatar_url,
-        updated_at: new Date(),
-      }
-
-      let { error } = await supabase.from('profiles').upsert(updates)
-
-      if (error) {
-        throw error
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        Alert.alert(error.message)
-      }
-    } finally {
-      setLoading(false)
+    const updates = {
+      id: userId,
+      username,
+      website,
+      avatar_url,
+      updated_at: new Date(),
     }
+
+    let { error } = await supabase.from('profiles').upsert(updates)
+
+    if (error) {
+      throw error
+    }
+  } catch (error) {
+    if (error instanceof Error) {
+      Alert.alert(error.message)
+    }
+  } finally {
+    setLoading(false)
   }
-
-
-// Get a random task
-const getRandomTask = () => {
-  
 }
+
 
 // Pick a number of random tasks from all categories
 const getRandomTasks = (num: number) => {
   const allTasks: { task: string; value: number; difficulty: string }[] = [];
 
   Object.keys(tasks).forEach((category) => {
-  tasks[category as keyof typeof tasks].forEach((t) => {
-    allTasks.push({
-      task: t.difficulty === "hard" ? "🔥 " + t.text : t.text,
-      value: t.points,
-      difficulty: t.difficulty,
+    tasks[category as keyof typeof tasks].forEach((t) => {
+      allTasks.push({
+        task: t.difficulty === "hard" ? "🔥 " + t.text : t.text,
+        value: t.points,
+        difficulty: t.difficulty,
+      });
     });
   });
-});
   const hardTasks = allTasks.filter(t => t.difficulty === "hard");
   const normalTasks = allTasks.filter(t => t.difficulty !== "hard");
 
   const selected = [
   hardTasks[Math.floor(Math.random() * hardTasks.length)],
   ...normalTasks.sort(() => 0.5 - Math.random()).slice(0, num - 1)
-];
+  ];
 
 return selected;
 };
 
 
 
-
-
 // Style sheet for home page
 const homeStyles = StyleSheet.create({
-  
-  // logout
   signoutButton:{
       paddingTop: 4,
       paddingBottom: 4,

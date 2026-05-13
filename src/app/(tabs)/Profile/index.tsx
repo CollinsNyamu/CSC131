@@ -107,7 +107,7 @@ export default function UserProfile({ userId, email }: { userId: string; email?:
             </View>
 
             <View style={globalStyles.mainBackground}>                
-                <Image source={require('./icon.png')} style={{ width: 100, height: 100, alignSelf: 'center' }} />
+                <Image source={require('../../assets/images/icon.png')} style={{ width: 100, height: 100, alignSelf: 'center' }} />
 
                 <Text>
                     Name
