@@ -190,6 +190,68 @@ const Clock = () => {
 };
 
 
+// Clock
+const Clock = () => {
+  const [time, setTime] = useState(new Date().toTimeString());
+  
+
+export default function App() {
+  const [session, setSession] = useState<Session | null | undefined>(undefined)
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTime(new Date().toLocaleString());
+    }, 1000);
+
+    return () => clearInterval(timer); // Cleanup on component unmount
+  }, []);
+
+  return(
+    <Text>
+      {time}
+    </Text>
+  );
+};
+
+// Clock - Countdown to midnight
+function getSecondsUntilMidnight(): number {
+  const now = new Date();
+  const midnight = new Date();
+  midnight.setHours(24, 0, 0, 0);
+  return Math.floor((midnight.getTime() - now.getTime()) / 1000);
+}
+
+const Clock = () => {
+  const [timeLeft, setTimeLeft] = useState(getSecondsUntilMidnight());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) {
+          // TODO: trigger task reset here later
+          return getSecondsUntilMidnight();
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  const hours = Math.floor(timeLeft / 3600);
+  const minutes = Math.floor((timeLeft % 3600) / 60);
+  const seconds = timeLeft % 60;
+  const hh = String(hours).padStart(2, '0');
+  const mm = String(minutes).padStart(2, '0');
+  const ss = String(seconds).padStart(2, '0');
+
+  return (
+    <Text style={{ fontSize: 20 }}>
+      {hh}:{mm}:{ss}
+    </Text>
+  );
+};
+
 // Style sheet for home page
 const homeStyles = StyleSheet.create({
   // tasks
