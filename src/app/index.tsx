@@ -1,6 +1,8 @@
 // src/app/index.tsx
 // This is the true root route — maps to URL "/"
 
+//working
+
 import { Image } from 'expo-image';
 import React, { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
