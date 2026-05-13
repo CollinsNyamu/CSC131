@@ -1,6 +1,4 @@
-import { globalStyles } from '@/components/globalStyles';
 import { Button, Input } from '@rneui/themed';
-import { Image } from 'expo-image';
 import { useEffect, useState } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
 import { supabase } from '../../../supabase';
@@ -8,7 +6,7 @@ import { supabase } from '../../../supabase';
 export default function UserProfile({ userId, email }: { userId: string; email?: string }) {
     const [loading, setLoading] = useState(true)
     const [username, setUsername] = useState('')
-    const [website, setWebsite] = useState('')
+    const [newPassword, setNewPassword] = useState('')
     const [avatarUrl, setAvatarUrl] = useState('')
   
     useEffect(() => {
@@ -30,7 +28,6 @@ export default function UserProfile({ userId, email }: { userId: string; email?:
   
         if (data) {
           setUsername(data.username)
-          setWebsite(data.website)
           setAvatarUrl(data.avatar_url)
         }
       } catch (error) {
@@ -44,11 +41,9 @@ export default function UserProfile({ userId, email }: { userId: string; email?:
   
     async function updateProfile({
       username,
-      website,
       avatar_url,
     }: {
       username: string
-      website: string
       avatar_url: string
     }) {
       try {
@@ -57,7 +52,7 @@ export default function UserProfile({ userId, email }: { userId: string; email?:
         const updates = {
           id: userId,
           username,
-          website,
+      
           avatar_url,
           updated_at: new Date(),
         }
@@ -75,55 +70,54 @@ export default function UserProfile({ userId, email }: { userId: string; email?:
         setLoading(false)
       }
     }
+    async function updatePassword() {
+      if (!newPassword) return;
+      
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) Alert.alert('Error updating password', error.message);
+      else {
+        Alert.alert('Password updated successfully!');
+        setNewPassword('');  // clear field after update
+      }
+    }
     return (
-        <>
-         <View>
-      <View style={[profileStyles.verticallySpaced, profileStyles.mt20]}>
-        <Input label="Email" value={email} disabled />
-      </View>
-      <View style={profileStyles.verticallySpaced}>
-        <Input label="Username" value={username || ''} onChangeText={(text) => setUsername(text)} />
-      </View>
-      <View style={profileStyles.verticallySpaced}>
-        <Input label="Website" value={website || ''} onChangeText={(text) => setWebsite(text)} />
-      </View>
-
-      <View style={[profileStyles.verticallySpaced, profileStyles.mt20]}>
-        <Button
-          title={loading ? 'Loading ...' : 'Update'}
-          onPress={() => updateProfile({ username, website, avatar_url: avatarUrl })}
-          disabled={loading}
-        />
-      </View>
-
-      <View style={profileStyles.verticallySpaced}>
-        <Button title="Sign Out" onPress={() => supabase.auth.signOut()} />
-      </View>
-    </View>
-            <View style={globalStyles.headerBackground}>
-                <Text style={globalStyles.headerText}>
-                    User Profile
-                </Text>
-            </View>
-
-            <View style={globalStyles.mainBackground}>                
-                <Image source={require('../../assets/images/icon.png')} style={{ width: 100, height: 100, alignSelf: 'center' }} />
-
-                <Text>
-                    Name
-                </Text>
-
-                <Text>
-                    Details
-                </Text>
-            </View>
-        </>   
-    )
+      <>
+        <View style={profileStyles.headerBackground}>
+          <Text style={profileStyles.headerText}>Profile</Text>
+        </View>
+  
+        <View style={profileStyles.mainBackground}>  {/* ← was just <View> */}
+          <View style={[profileStyles.verticallySpaced, profileStyles.mt20]}>
+            <Input label="Email" value={email} disabled />
+          </View>
+          <View style={profileStyles.verticallySpaced}>
+            <Input label="Username" value={username || ''} onChangeText={(text) => setUsername(text)} />
+          </View>
+          <View style={profileStyles.verticallySpaced}>
+            <Input label="New Password" value={newPassword} onChangeText={(text) => setNewPassword(text)}
+             secureTextEntry={true}  autoCapitalize="none" />
+          </View>
+          <View style={[profileStyles.verticallySpaced, profileStyles.mt20]}>
+            <Button
+              title={loading ? 'Loading ...' : 'Update'}
+              onPress={() => {
+                updateProfile({ username, avatar_url: avatarUrl });
+                if (newPassword) updatePassword();
+              }}
+              disabled={loading}
+            />
+          </View>
+          <View style={profileStyles.verticallySpaced}>
+            <Button title="Sign Out" onPress={() => supabase.auth.signOut()} />
+          </View>
+        </View>
+      </>
+  )
 }
 
 const profileStyles = StyleSheet.create({
     container: {
-      marginTop: 40,
+      marginTop: 90,
       padding: 12,
     },
     verticallySpaced: {
@@ -132,6 +126,25 @@ const profileStyles = StyleSheet.create({
       alignSelf: 'stretch',
     },
     mt20: {
-      marginTop: 20,
+      marginTop: 10,
     },
+    headerBackground:{
+      height: 85,
+      backgroundColor: '#e7ecef',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    headerText:{
+      color: '#8b8c89',
+      fontSize: 40
+    },
+    mainBackground:{
+      flex: 7,
+      backgroundColor: '#a3cef1',
+      justifyContent: 'flex-start',
+      alignItems: 'stretch',
+      rowGap: 20,
+      padding: 20
+    }
+
   })

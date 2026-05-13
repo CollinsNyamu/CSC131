@@ -1,75 +1,156 @@
 import { globalStyles } from '@/components/globalStyles';
-import { StyleSheet, Text, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { StyleSheet, Text, TouchableOpacity, View, ActivityIndicator, ScrollView } from 'react-native';
+import { supabase } from '../../../supabase';
+
+type LeaderboardUser = {
+  display_name: string;  // ← was username
+  points: number;
+};
 
 export default function Leaderboard() {
-    return (
-        <>
-            <View style={globalStyles.headerBackground}>
-                <Text style={globalStyles.headerText}>
-                    Leaderboards
-                </Text>
-            </View>
+  const [selected, setSelected] = useState<'Daily' | 'Weekly' | 'All Time'>('Daily');
+  const [users, setUsers] = useState<LeaderboardUser[]>([]);
+  const [loading, setLoading] = useState(true);
 
-            <View style={globalStyles.mainBackground}>
-                <LeaderboardEntry rank={1} name={"test1"} score={100} />
-                <LeaderboardEntry rank={2} name={"test2"} score={90} />
-                <LeaderboardEntry rank={3} name={"test3"} score={80} />
-                <LeaderboardEntry rank={4} name={"test4"} score={70} />
-                <LeaderboardEntry rank={5} name={"test5"} score={60} />
-                <LeaderboardEntry rank={6} name={"test6"} score={50} />
-                <LeaderboardEntry rank={7} name={"test7"} score={40} />
-                <LeaderboardEntry rank={8} name={"test8"} score={30} />
-                <LeaderboardEntry rank={9} name={"test9"} score={20} />
-                <LeaderboardEntry rank={10} name={"test10"} score={10} />
-            </View>
-        </>
-    );
-}
+  useEffect(() => {
+    fetchLeaderboard(selected);
+  }, [selected]); 
 
-// Leaderboard entries
-type leaderboardProps = {
-    rank: number
-    name: string
-    score: number
-}
-
-const LeaderboardEntry = (props: leaderboardProps) => {
-    return (
-        <View style={leaderboardStyles.background}>
-            <Text style={leaderboardStyles.rank}>{props.rank}</Text>
-
-            <Text style={leaderboardStyles.name}>{props.name}</Text>
-
-            <Text style={leaderboardStyles.points}>{props.score}</Text>
-        </View>
-    );
-}
-
-// Style sheet for leaderboard page
-const leaderboardStyles = StyleSheet.create({
-  // leaderboard entries
-  background:{
-    alignItems: 'center',
-    backgroundColor: '#6096ba',
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    columnGap: 20,
-    width: '90%',
-    padding: 10,
-    flexWrap: 'wrap'
-  },
-  rank:{
-    color: '#274c77',
-    fontSize: 20,
-    justifyContent: 'flex-start'
-  },
-  name:{
-    color: '#8b8c89',
-    justifyContent: 'center'
-  },
-  points:{
-    color: '#274c77',
-    fontSize: 20,
-    justifyContent: 'flex-end'
+  async function fetchLeaderboard(tab: 'Daily' | 'Weekly' | 'All Time') {
+    setLoading(true);
+  
+    if (tab === 'All Time') {
+      const { data, error } = await supabase
+        .from('leaderboard_view')
+        .select('display_name, points')
+        .order('points', { ascending: false })
+        .limit(10);
+  
+      if (!error) setUsers(data ?? []);
+  
+    } else {
+      const startDate = new Date();
+      if (tab === 'Daily') startDate.setHours(0, 0, 0, 0);
+      if (tab === 'Weekly') startDate.setDate(startDate.getDate() - 7);
+  
+      // Fetch ALL users first
+      const { data: allUsers, error: usersError } = await supabase
+        .from('leaderboard_view')
+        .select('id,display_name, points');
+  
+      // Fetch points earned in the time window
+      const { data: history, error: historyError } = await supabase
+        .from('points_history')
+        .select('user_id, points')
+        .gte('earned_at', startDate.toISOString());
+  
+      if (!usersError && allUsers) {
+        // Sum history points per user
+        const totals: Record<string, number> = {};
+        history?.forEach(({ user_id, points }) => {
+          totals[user_id] = (totals[user_id] ?? 0) + points;
+        });
+  
+        // Map all users, defaulting to 0 if no points in window
+        const sorted = allUsers
+          .map((user: any) => ({
+            display_name: user.display_name,
+            points: totals[user.id] ?? 0,  // ← 0 if no activity
+          }))
+          .sort((a, b) => b.points - a.points)
+          .slice(0, 10);
+  
+        setUsers(sorted);
+      }
+    }
+  
+    setLoading(false);
   }
+
+  return (
+    <>
+      <View style={globalStyles.headerBackground}>
+        <Text style={globalStyles.headerText}>Leaderboard</Text>
+      </View>
+
+      <View style={globalStyles.mainBackground}>
+        {loading ? (
+          <ActivityIndicator size="large" />
+        ) : (
+          <ScrollView style={{ width: '100%' }} contentContainerStyle={{ alignItems: 'center', gap: 10 }}>
+            {users.map((user, index) => (
+              <LeaderboardEntry key={index} rank={index + 1} name={user.display_name} score={user.points} />
+            ))}
+          </ScrollView>
+        )}
+      </View>
+
+      {/* Tab Selector */}
+      <View style={tabStyles.container}>
+        {(['Daily', 'Weekly', 'All Time'] as const).map((tab) => (
+          <TouchableOpacity
+            key={tab}
+            style={[tabStyles.tab, selected === tab && tabStyles.activeTab]}
+            onPress={() => setSelected(tab)}
+          >
+            <Text style={[tabStyles.tabText, selected === tab && tabStyles.activeText]}>
+              {tab}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    </>
+  );
+}
+
+// Leaderboard Entry
+type LeaderboardProps = { rank: number; name: string; score: number };
+
+const LeaderboardEntry = ({ rank, name, score }: LeaderboardProps) => (
+  <View style={leaderboardStyles.background}>
+    <Text style={leaderboardStyles.rank}>{rank}</Text>
+    <Text style={leaderboardStyles.name}>{name}</Text>
+    <Text style={leaderboardStyles.points}>{score}</Text>
+  </View>
+);
+
+const leaderboardStyles = StyleSheet.create({
+  background: {
+    alignItems: 'center',
+    backgroundColor: '#e8e8e8',
+    borderRadius: 8,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    width: '90%',
+  },
+  rank: { color: '#555', fontSize: 16, width: 24 },
+  name: { color: '#333', fontSize: 16, flex: 1, marginLeft: 10 },
+  points: { color: '#333', fontSize: 16, fontWeight: 'bold' },
 });
+
+const tabStyles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    backgroundColor: '#f2f2f2',
+    borderRadius: 20,
+    marginHorizontal: 20,
+    marginBottom: 20,
+    padding: 4,
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: 8,
+    alignItems: 'center',
+    borderRadius: 16,
+  },
+  activeTab: {
+    backgroundColor: '#fff',
+  },
+  tabText: { color: '#888', fontSize: 14 },
+  activeText: { color: '#4a90e2', fontWeight: 'bold' },
+});
+
