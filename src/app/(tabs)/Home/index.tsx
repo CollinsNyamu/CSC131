@@ -135,8 +135,8 @@ const Checkbox = ({ value, userId }: CheckboxProps) => {
       <Image 
         source={
           pressed
-          ? require('./checkmark_filled.png') 
-          : require('./checkmark_empty.png')} 
+          ? require('../../../../assets/images/checkmark_filled.png') 
+          : require('../../../../assets/images/checkmark_empty.png')} 
         style={{ width: 50, height: 50, alignSelf: 'center' }}
       />
     </Pressable>
