@@ -6,6 +6,7 @@ import { globalStyles } from '@/components/globalStyles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useEffect, useState } from 'react';
 import { Alert, Button, StyleSheet, Text, View } from 'react-native';
+import { Clock } from '../../../components/clock';
 import { Task } from '../../../components/task';
 import { tasks } from "../../../data/tasks";
 import { supabase } from '../../../supabase';
@@ -21,31 +22,8 @@ export default function Home({ userId, email }: { userId: string; email?: string
 
   getProfile(userId);
 
-  const [dailyTasks, setDailyTasks] = useState<
-  { task: string; value: number; difficulty: string }[]
->([]);
-
-  useEffect(() => {
-  const loadTasks = async () => {
-    const today = new Date().toDateString();
-
-    const savedDate = await AsyncStorage.getItem(`date-${userId}`);
-    const savedTasks = await AsyncStorage.getItem(`tasks-${userId}`);
-
-    if (savedDate === today && savedTasks) {
-      setDailyTasks(JSON.parse(savedTasks));
-    } else {
-      const newTasks = getRandomTasks(5);
-      setDailyTasks(newTasks);
-
-      await AsyncStorage.setItem(`tasks-${userId}`, JSON.stringify(newTasks));
-      await AsyncStorage.setItem(`date-${userId}`, today);
-    }
-  };
-
-  loadTasks();
-}, []);
-
+  
+  useEffect(() => { loadTasks(userId) }, []);
 
 
   return(
@@ -107,10 +85,12 @@ async function getProfile(userId: string) {
 
 async function updateProfile({
   username,
+  userId,
   website,
-  avatar_url,
+  avatar_url
 }: {
   username: string
+  userId: string
   website: string
   avatar_url: string
 }) {
@@ -141,7 +121,7 @@ async function updateProfile({
 
 
 // Pick a number of random tasks from all categories
-const getRandomTasks = (num: number) => {
+function getRandomTasks(num: number) {
   const allTasks: { task: string; value: number; difficulty: string }[] = [];
 
   Object.keys(tasks).forEach((category) => {
@@ -163,6 +143,28 @@ const getRandomTasks = (num: number) => {
 
 return selected;
 };
+
+
+const [dailyTasks, setDailyTasks] = useState<
+  { task: string; value: number; difficulty: string }[]
+>([]);
+
+async function loadTasks(userId: string) {
+    const today = new Date().toDateString();
+
+    const savedDate = await AsyncStorage.getItem(`date-${userId}`);
+    const savedTasks = await AsyncStorage.getItem(`tasks-${userId}`);
+
+    if (savedDate === today && savedTasks) {
+      setDailyTasks(JSON.parse(savedTasks));
+    } else {
+      const newTasks = getRandomTasks(5);
+      setDailyTasks(newTasks);
+
+      await AsyncStorage.setItem(`tasks-${userId}`, JSON.stringify(newTasks));
+      await AsyncStorage.setItem(`date-${userId}`, today);
+    }
+  };
 
 
 
