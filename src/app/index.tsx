@@ -1,6 +1,8 @@
 // src/app/index.tsx
 // This is the true root route — maps to URL "/"
 
+//working
+
 import { Session } from '@supabase/supabase-js'
 import { useEffect, useState } from 'react'
 import { View } from 'react-native'

@@ -1,10 +1,7 @@
-import { globalStyles } from '@/components/globalStyles';
 import { Button, Input } from '@rneui/themed';
-import { Image } from 'expo-image';
 import { useEffect, useState } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
 import { supabase } from '../../../supabase';
-import { HeaderBackground } from '@react-navigation/elements';
 
 export default function UserProfile({ userId, email }: { userId: string; email?: string }) {
     const [loading, setLoading] = useState(true)

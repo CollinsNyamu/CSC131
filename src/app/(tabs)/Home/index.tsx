@@ -1,24 +1,59 @@
-// index.tsx
-// This is the initial root / first screen
+
 
 //Temp. add Log Out button to home screen till nav done
 
 import { globalStyles } from '@/components/globalStyles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Image } from 'expo-image';
-import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Alert, Button, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, Button, StyleSheet, Text, View } from 'react-native';
+import { Clock } from '../../../components/clock';
+import { Task } from '../../../components/task';
 import { tasks } from "../../../data/tasks";
 import { supabase } from '../../../supabase';
 
 
-// Main
+
+// Home screen
 export default function Home({ userId, email }: { userId: string; email?: string }) {
-  const [loading, setLoading] = useState(true)
-  const [username, setUsername] = useState('')
-  const [website, setWebsite] = useState('')
-  const [avatarUrl, setAvatarUrl] = useState('')
+  
+  useEffect(() => {
+    if (userId) getProfile(userId)
+  }, [userId])
+
+  getProfile(userId);
+
+  
+  useEffect(() => { loadTasks(userId) }, []);
+
+
+  return(
+    <>
+      <View style={globalStyles.headerBackground}>
+        <Text style={globalStyles.headerText}>
+          Daily Tasks
+        </Text>
+        <Clock />
+      </View>
+
+      <View style={globalStyles.mainBackground}>
+        {dailyTasks.map((t, index) => (
+          <Task key={index} task={t.task} value={t.value} userId={userId} />
+        ))}
+      </View>
+      <View style={homeStyles.signoutButton}>
+        <Button title="Sign Out" onPress={() => supabase.auth.signOut()} />
+      </View>
+  
+    </>
+    
+  );
+}
+
+// Profile
+const [loading, setLoading] = useState(true)
+const [username, setUsername] = useState('')
+const [website, setWebsite] = useState('')
+const [avatarUrl, setAvatarUrl] = useState('')
   
   const router = useRouter();
 
@@ -144,92 +179,55 @@ const Checkbox = ({ value, userId }: CheckboxProps) => {
 };
 
 // Pick a number of random tasks from all categories
-const getRandomTasks = (num: number) => {
+function getRandomTasks(num: number) {
   const allTasks: { task: string; value: number; difficulty: string }[] = [];
 
   Object.keys(tasks).forEach((category) => {
-  tasks[category as keyof typeof tasks].forEach((t) => {
-    allTasks.push({
-      task: t.difficulty === "hard" ? "🔥 " + t.text : t.text,
-      value: t.points,
-      difficulty: t.difficulty,
+    tasks[category as keyof typeof tasks].forEach((t) => {
+      allTasks.push({
+        task: t.difficulty === "hard" ? "🔥 " + t.text : t.text,
+        value: t.points,
+        difficulty: t.difficulty,
+      });
     });
   });
-});
   const hardTasks = allTasks.filter(t => t.difficulty === "hard");
   const normalTasks = allTasks.filter(t => t.difficulty !== "hard");
 
   const selected = [
   hardTasks[Math.floor(Math.random() * hardTasks.length)],
   ...normalTasks.sort(() => 0.5 - Math.random()).slice(0, num - 1)
-];
+  ];
 
 return selected;
 };
 
 
-// Clock - Countdown to midnight
-function getSecondsUntilMidnight(): number {
-  const now = new Date();
-  const midnight = new Date();
-  midnight.setHours(24, 0, 0, 0);
-  return Math.floor((midnight.getTime() - now.getTime()) / 1000);
-}
+const [dailyTasks, setDailyTasks] = useState<
+  { task: string; value: number; difficulty: string }[]
+>([]);
 
-const Clock = () => {
-  const [timeLeft, setTimeLeft] = useState(getSecondsUntilMidnight());
+async function loadTasks(userId: string) {
+    const today = new Date().toDateString();
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev <= 1) {
-          // TODO: trigger task reset here later
-          return getSecondsUntilMidnight();
-        }
-        return prev - 1;
-      });
-    }, 1000);
+    const savedDate = await AsyncStorage.getItem(`date-${userId}`);
+    const savedTasks = await AsyncStorage.getItem(`tasks-${userId}`);
 
-    return () => clearInterval(timer);
-  }, []);
+    if (savedDate === today && savedTasks) {
+      setDailyTasks(JSON.parse(savedTasks));
+    } else {
+      const newTasks = getRandomTasks(5);
+      setDailyTasks(newTasks);
 
-  const hours = Math.floor(timeLeft / 3600);
-  const minutes = Math.floor((timeLeft % 3600) / 60);
-  const seconds = timeLeft % 60;
-  const hh = String(hours).padStart(2, '0');
-  const mm = String(minutes).padStart(2, '0');
-  const ss = String(seconds).padStart(2, '0');
+      await AsyncStorage.setItem(`tasks-${userId}`, JSON.stringify(newTasks));
+      await AsyncStorage.setItem(`date-${userId}`, today);
+    }
+  };
 
-  return (
-    <Text style={{ fontSize: 20 }}>
-      {hh}:{mm}:{ss}
-    </Text>
-  );
-};
+
 
 // Style sheet for home page
 const homeStyles = StyleSheet.create({
-  // tasks
-  taskBackground:{
-    alignItems: 'center',
-    backgroundColor: '#6096ba',
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    columnGap: 20,
-    width: '90%',
-    padding: 10,
-    flexWrap: 'wrap'
-  },
-  taskPoints:{
-    color: '#274c77',
-    fontSize: 20,
-    justifyContent: 'flex-end'
-  },
-  taskText:{
-    color: '#black',
-    justifyContent: 'center'
-  },
-  // logout
   signoutButton:{
       paddingTop: 4,
       paddingBottom: 4,

@@ -1,8 +1,6 @@
-// app-tabs.native.tsx
-// Tabs component for Android and iOS
-
 import { Icon, Label, NativeTabs } from 'expo-router/unstable-native-tabs';
 
+// Tabs bar at bottom of screen - component for Android and iOS
 export default function AppTabs() {
   return (
     <NativeTabs>
