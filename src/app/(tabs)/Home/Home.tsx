@@ -1,8 +1,8 @@
 import { globalStyles } from '@/components/globalStyles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Image } from 'expo-image';
 import React, { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Task } from '../../../components/task';
 import { tasks } from "../../../data/tasks";
 
 const getRandomTasks = (num: number) => {
@@ -86,19 +86,19 @@ export default function Home({ userId }: { userId: string }) {
 
       <ScrollView style={{ backgroundColor: '#0f0f1a', padding: 20 }}>
         {dailyTasks.map((t, index) => (
-          <Task key={index} task={t.task} value={t.value} onReroll={() => handleReroll(index)} />
+          <Task key={index} task={t.task} value={t.value} userId={userId ?? ''} onReroll={() => handleReroll(index)} />
         ))}
 
         {rerollOptions.length > 0 && (
-          <View style={taskStyles.rerollContainer}>
-            <Text style={taskStyles.rerollTitle}>Choose a new task:</Text>
+          <View style={rerollStyles.rerollContainer}>
+            <Text style={rerollStyles.rerollTitle}>Choose a new task:</Text>
             {rerollOptions.map((opt, i) => (
               <Pressable
                 key={i}
                 onPress={() => handleSelectOption(opt)}
-                style={taskStyles.rerollOption}
+                style={rerollStyles.rerollOption}
               >
-                <Text style={taskStyles.rerollText}>
+                <Text style={rerollStyles.rerollText}>
                   {opt.difficulty === "hard" ? "🔥 " : ""}{opt.text}
                 </Text>
               </Pressable>
@@ -109,31 +109,6 @@ export default function Home({ userId }: { userId: string }) {
     </>
   );
 }
-
-type TaskProps = { task: string; value: number; onReroll: () => void };
-
-const Task = (props: TaskProps) => (
-  <View style={taskStyles.taskBackground}>
-    <Checkbox />
-    <Text style={taskStyles.taskPoints}>{props.value}</Text>
-    <Text style={taskStyles.taskText}>{props.task}</Text>
-    <Pressable onPress={props.onReroll}>
-      <Text style={{ fontSize: 20 }}>🔄</Text>
-    </Pressable>
-  </View>
-);
-
-const Checkbox = () => {
-  const [pressed, setPressed] = useState(false);
-  return (
-    <Pressable onPress={() => setPressed(!pressed)}>
-      <Image
-        source={pressed ? require('../../../../assets/images/checkmark_filled.png') : require('../../../../assets/images/checkmark_empty.png')}
-        style={{ width: 50, height: 50, alignSelf: 'center' }}
-      />
-    </Pressable>
-  );
-};
 
 function getSecondsUntilMidnight(): number {
   const now = new Date();
@@ -163,36 +138,7 @@ const Clock = () => {
   );
 };
 
-const taskStyles = StyleSheet.create({
-  taskBackground: {
-    alignItems: 'center',
-    backgroundColor: '#1a1a2e',
-    borderWidth: 1,
-    borderColor: '#7c3aed',
-    borderRadius: 12,
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    columnGap: 16,
-    width: '100%',
-    padding: 14,
-    marginBottom: 12,
-    shadowColor: '#7c3aed',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
-  },
-  taskPoints: {
-    color: '#a78bfa',
-    fontSize: 18,
-    fontWeight: 'bold',
-    minWidth: 50,
-    textAlign: 'right',
-  },
-  taskText: {
-    color: '#e2e8f0',
-    fontSize: 16,
-    flex: 1,
-  },
+const rerollStyles = StyleSheet.create({
   rerollContainer: {
     backgroundColor: '#1a1a2e',
     borderWidth: 1,
