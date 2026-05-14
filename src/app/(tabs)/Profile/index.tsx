@@ -129,22 +129,26 @@ const profileStyles = StyleSheet.create({
       marginTop: 10,
     },
     headerBackground:{
-      height: 85,
-      backgroundColor: '#e7ecef',
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-    headerText:{
-      color: '#8b8c89',
-      fontSize: 40
-    },
-    mainBackground:{
-      flex: 7,
-      backgroundColor: '#a3cef1',
-      justifyContent: 'flex-start',
-      alignItems: 'stretch',
-      rowGap: 20,
-      padding: 20
-    }
+  height: 85,
+  backgroundColor: '#0f0f1a',
+  justifyContent: 'center',
+  alignItems: 'center',
+  borderBottomWidth: 1,
+  borderBottomColor: '#7c3aed',
+},
+headerText:{
+  color: '#ffffff',
+  fontSize: 40,
+  fontWeight: 'bold',
+  letterSpacing: 2,
+},
+mainBackground:{
+  flex: 7,
+  backgroundColor: '#0f0f1a',
+  justifyContent: 'flex-start',
+  alignItems: 'stretch',
+  rowGap: 20,
+  padding: 20
+}
 
   })

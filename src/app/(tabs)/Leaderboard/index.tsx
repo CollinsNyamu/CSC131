@@ -1,6 +1,6 @@
 import { globalStyles } from '@/components/globalStyles';
 import { useEffect, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View, ActivityIndicator, ScrollView } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { supabase } from '../../../supabase';
 
 type LeaderboardUser = {
@@ -118,28 +118,35 @@ const LeaderboardEntry = ({ rank, name, score }: LeaderboardProps) => (
 const leaderboardStyles = StyleSheet.create({
   background: {
     alignItems: 'center',
-    backgroundColor: '#e8e8e8',
-    borderRadius: 8,
+    backgroundColor: '#1a1a2e',
+    borderWidth: 1,
+    borderColor: '#7c3aed',
+    borderRadius: 12,
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 14,
     width: '90%',
+    shadowColor: '#7c3aed',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
   },
-  rank: { color: '#555', fontSize: 16, width: 24 },
-  name: { color: '#333', fontSize: 16, flex: 1, marginLeft: 10 },
-  points: { color: '#333', fontSize: 16, fontWeight: 'bold' },
+  rank: { color: '#a78bfa', fontSize: 16, width: 24, fontWeight: 'bold' },
+  name: { color: '#e2e8f0', fontSize: 16, flex: 1, marginLeft: 10 },
+  points: { color: '#a78bfa', fontSize: 16, fontWeight: 'bold' },
 });
 
 const tabStyles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    backgroundColor: '#f2f2f2',
-    borderRadius: 20,
-    marginHorizontal: 20,
-    marginBottom: 20,
-    padding: 4,
+    backgroundColor: '#1a1a2e',
+    borderTopWidth: 1,
+    borderTopColor: '#7c3aed',
+    marginHorizontal: 0,
+    marginBottom: 0,
+    padding: 8,
   },
   tab: {
     flex: 1,
@@ -148,9 +155,9 @@ const tabStyles = StyleSheet.create({
     borderRadius: 16,
   },
   activeTab: {
-    backgroundColor: '#fff',
+    backgroundColor: '#7c3aed',
   },
   tabText: { color: '#888', fontSize: 14 },
-  activeText: { color: '#4a90e2', fontWeight: 'bold' },
+  activeText: { color: '#ffffff', fontWeight: 'bold' },
 });
 

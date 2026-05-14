@@ -1,320 +1,222 @@
-// index.tsx
-// This is the initial root / first screen
-
-//Temp. add Log Out button to home screen till nav done
-
 import { globalStyles } from '@/components/globalStyles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Image } from 'expo-image';
-import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Alert, Button, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { tasks } from "../../../data/tasks";
-import { supabase } from '../../../supabase';
 
-
-
-// picks 5 random tasks from all categories
 const getRandomTasks = (num: number) => {
-const allTasks: { task: string; value: number; difficulty: string; category: string }[] = [];
-
+  const allTasks: { task: string; value: number; difficulty: string; category: string }[] = [];
   Object.keys(tasks).forEach((category) => {
-  tasks[category as keyof typeof tasks].forEach((t) => {
-    allTasks.push({
-      task: t.difficulty === "hard" ? "🔥 " + t.text : t.text,
-      value: t.points,
-      difficulty: t.difficulty,
-      category: category,
+    tasks[category as keyof typeof tasks].forEach((t) => {
+      allTasks.push({
+        task: t.difficulty === "hard" ? "🔥 " + t.text : t.text,
+        value: t.points,
+        difficulty: t.difficulty,
+        category: category,
+      });
     });
   });
-});
   const hardTasks = allTasks.filter(t => t.difficulty === "hard");
   const normalTasks = allTasks.filter(t => t.difficulty !== "hard");
-
-  const selected = [
-  hardTasks[Math.floor(Math.random() * hardTasks.length)],
-  ...normalTasks.sort(() => 0.5 - Math.random()).slice(0, num - 1)
-];
-
-return selected;
+  return [
+    hardTasks[Math.floor(Math.random() * hardTasks.length)],
+    ...normalTasks.sort(() => 0.5 - Math.random()).slice(0, num - 1)
+  ];
 };
 
-// Main
-export default function Home({ userId, email }: { userId: string; email?: string }) {
-  const [loading, setLoading] = useState(true)
-  const [username, setUsername] = useState('')
-  const [website, setWebsite] = useState('')
-  const [avatarUrl, setAvatarUrl] = useState('')
+export default function Home({ userId }: { userId: string }) {
+  const [dailyTasks, setDailyTasks] = useState<{ task: string; value: number; difficulty: string; category: string }[]>([]);
+  const [rerollOptions, setRerollOptions] = useState<any[]>([]);
+  const [rerollIndex, setRerollIndex] = useState<number | null>(null);
+  const [rerollCategory, setRerollCategory] = useState<string | null>(null);
 
   useEffect(() => {
-    if (userId) getProfile()
-  }, [userId])
-
-  async function getProfile() {
-    try {
-      setLoading(true)
-
-      let { data, error, status } = await supabase
-        .from('profiles')
-        .select(`username, website, avatar_url`)
-        .eq('id', userId)
-        .single()
-      if (error && status !== 406) {
-        throw error
+    const loadTasks = async () => {
+      const today = new Date().toDateString();
+      const savedDate = await AsyncStorage.getItem(`date-${userId}`);
+      const savedTasks = await AsyncStorage.getItem(`tasks-${userId}`);
+      if (savedDate === today && savedTasks) {
+        setDailyTasks(JSON.parse(savedTasks));
+      } else {
+        const newTasks = getRandomTasks(5);
+        setDailyTasks(newTasks);
+        await AsyncStorage.setItem(`tasks-${userId}`, JSON.stringify(newTasks));
+        await AsyncStorage.setItem(`date-${userId}`, today);
       }
+    };
+    loadTasks();
+  }, []);
 
-      if (data) {
-        setUsername(data.username)
-        setWebsite(data.website)
-        setAvatarUrl(data.avatar_url)
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        Alert.alert(error.message)
-      }
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  async function updateProfile({
-    username,
-    website,
-    avatar_url,
-  }: {
-    username: string
-    website: string
-    avatar_url: string
-  }) {
-    try {
-      setLoading(true)
-
-      const updates = {
-        id: userId,
-        username,
-        website,
-        avatar_url,
-        updated_at: new Date(),
-      }
-
-      let { error } = await supabase.from('profiles').upsert(updates)
-
-      if (error) {
-        throw error
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        Alert.alert(error.message)
-      }
-    } finally {
-      setLoading(false)
-    }
-  }
-  const router = useRouter();
-
-  const [dailyTasks, setDailyTasks] = useState<
-  { task: string; value: number; difficulty: string; category: string }[]>([]);
-
-const [rerollOptions, setRerollOptions] = useState<any[]>([]);
-const [rerollIndex, setRerollIndex] = useState<number | null>(null);
-const [rerollCategory, setRerollCategory] = useState<string | null>(null);
-
-useEffect(() => {
-  const loadTasks = async () => {
-    const today = new Date().toDateString();
-
-    const savedDate = await AsyncStorage.getItem(`date-${userId}`);
-    const savedTasks = await AsyncStorage.getItem(`tasks-${userId}`);
-
-    if (savedDate === today && savedTasks) {
-      setDailyTasks(JSON.parse(savedTasks));
-    } else {
-      const newTasks = getRandomTasks(5);
-      setDailyTasks(newTasks);
-
-      await AsyncStorage.setItem(`tasks-${userId}`, JSON.stringify(newTasks));
-      await AsyncStorage.setItem(`date-${userId}`, today);
-    }
+  const handleReroll = (index: number) => {
+    const current = dailyTasks[index];
+    if (!current) return;
+    const categoryTasks = tasks[current.category as keyof typeof tasks];
+    if (!categoryTasks) return;
+    const options = [...categoryTasks].sort(() => 0.5 - Math.random()).slice(0, 3);
+    setRerollOptions(options);
+    setRerollIndex(index);
+    setRerollCategory(current.category);
   };
 
-  loadTasks();
-}, []);
+  const handleSelectOption = (option: any) => {
+    if (rerollIndex === null || rerollCategory === null) return;
+    setDailyTasks(prev => {
+      const updated = [...prev];
+      updated[rerollIndex] = {
+        task: option.difficulty === "hard" ? "🔥 " + option.text : option.text,
+        value: option.points,
+        difficulty: option.difficulty,
+        category: rerollCategory!
+      };
+      AsyncStorage.setItem(`tasks-${userId}`, JSON.stringify(updated));
+      return updated;
+    });
+    setRerollOptions([]);
+    setRerollIndex(null);
+    setRerollCategory(null);
+  };
 
-
-const handleReroll = (index: number) => {
-  const current = dailyTasks[index];
-  if (!current) return;
-  const categoryTasks = tasks[current.category as keyof typeof tasks];
-  if (!categoryTasks) return;
-  const options = [...categoryTasks].sort(() => 0.5 - Math.random()).slice(0, 3);
-  setRerollOptions(options);
-  setRerollIndex(index);
-  setRerollCategory(current.category);
-};
-
-const handleSelectOption = (option: any) => {
-  if (rerollIndex === null || rerollCategory === null) return;
-
-  setDailyTasks(prev => {
-    const updated = [...prev];
-
-    updated[rerollIndex] = {
-      task: option.difficulty === "hard" ? "🔥 " + option.text : option.text,
-      value: option.points,
-      difficulty: option.difficulty,
-      category: rerollCategory!
-    };
-    AsyncStorage.setItem(`tasks-${userId}`, JSON.stringify(updated));
-
-    return updated;
-  });
-
-  // clear options after selecting
-  setRerollOptions([]);
-  setRerollIndex(null);
-  setRerollCategory(null);
-};
-
-
-  return(
+  return (
     <>
       <View style={globalStyles.headerBackground}>
-        <Text style={globalStyles.headerText}>
-          Daily Tasks
-        </Text>
+        <Text style={globalStyles.headerText}>Daily Tasks</Text>
         <Clock />
       </View>
 
-      <ScrollView style={{ backgroundColor: 'turquoise', padding: 20 }}>
+      <ScrollView style={{ backgroundColor: '#0f0f1a', padding: 20 }}>
         {dailyTasks.map((t, index) => (
           <Task key={index} task={t.task} value={t.value} onReroll={() => handleReroll(index)} />
         ))}
-        
-        {rerollOptions.length > 0 && (
-          <View style={{ padding: 10 }}>
-            <Text>Choose a new task:</Text>
 
+        {rerollOptions.length > 0 && (
+          <View style={taskStyles.rerollContainer}>
+            <Text style={taskStyles.rerollTitle}>Choose a new task:</Text>
             {rerollOptions.map((opt, i) => (
               <Pressable
                 key={i}
                 onPress={() => handleSelectOption(opt)}
-                style={{ padding: 12, backgroundColor: '#ddd', marginTop: 8, width: '100%', borderRadius: 6 }}
+                style={taskStyles.rerollOption}
               >
-                <Text>
-                  {opt.difficulty === "hard" ? "🔥 " : " "}
-                  {opt.text}
-                  </Text>
+                <Text style={taskStyles.rerollText}>
+                  {opt.difficulty === "hard" ? "🔥 " : ""}{opt.text}
+                </Text>
               </Pressable>
             ))}
           </View>
-            )}
+        )}
       </ScrollView>
-      <View style={styles.verticallySpaced}>
-        <Button title="Sign Out" onPress={() => supabase.auth.signOut()} />
-      </View>
     </>
-    
   );
 }
 
+type TaskProps = { task: string; value: number; onReroll: () => void };
 
-
-// Tasks
-type TaskProps = {
-  task: string;
-  value: number;
-  onReroll: () => void;
-};
-
-const Task = (props: TaskProps) => {
-  return(
+const Task = (props: TaskProps) => (
   <View style={taskStyles.taskBackground}>
     <Checkbox />
-    <Text style={taskStyles.taskPoints}>
-        {props.value}
-    </Text>
-
-    <Text style={taskStyles.taskText}>
-      {props.task}
-    </Text>
+    <Text style={taskStyles.taskPoints}>{props.value}</Text>
+    <Text style={taskStyles.taskText}>{props.task}</Text>
     <Pressable onPress={props.onReroll}>
-    <Text style={{ color: 'red', fontSize: 20 }}>
-      🔄
-    </Text>
+      <Text style={{ fontSize: 20 }}>🔄</Text>
     </Pressable>
-    </View>
-  
-  );
-};
+  </View>
+);
 
 const Checkbox = () => {
   const [pressed, setPressed] = useState(false);
-
-  return(
-    <Pressable
-      onPress={() => {
-        setPressed(!pressed);
-      }}
-    >
-      <Image 
-        source={
-          pressed
-          ? require('../../../../assets/images/checkmark_filled.png') 
-          : require('../../../../assets/images/checkmark_empty.png')
-        }  style={{ width: 50, height: 50, alignSelf: 'center' }}
+  return (
+    <Pressable onPress={() => setPressed(!pressed)}>
+      <Image
+        source={pressed ? require('../../../../assets/images/checkmark_filled.png') : require('../../../../assets/images/checkmark_empty.png')}
+        style={{ width: 50, height: 50, alignSelf: 'center' }}
       />
     </Pressable>
   );
 };
 
-// Clock
+function getSecondsUntilMidnight(): number {
+  const now = new Date();
+  const midnight = new Date();
+  midnight.setHours(24, 0, 0, 0);
+  return Math.floor((midnight.getTime() - now.getTime()) / 1000);
+}
+
 const Clock = () => {
-  const [time, setTime] = useState(new Date().toTimeString());
-  
+  const [timeLeft, setTimeLeft] = useState(getSecondsUntilMidnight());
+
   useEffect(() => {
     const timer = setInterval(() => {
-      setTime(new Date().toLocaleString());
+      setTimeLeft(prev => prev <= 1 ? getSecondsUntilMidnight() : prev - 1);
     }, 1000);
-
-    return () => clearInterval(timer); // Cleanup on component unmount
+    return () => clearInterval(timer);
   }, []);
 
-  return(
-    <Text>
-      {time}
+  const hours = Math.floor(timeLeft / 3600);
+  const minutes = Math.floor((timeLeft % 3600) / 60);
+  const seconds = timeLeft % 60;
+
+  return (
+    <Text style={{ fontSize: 18, color: '#a78bfa', letterSpacing: 1 }}>
+      {String(hours).padStart(2, '0')}:{String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
     </Text>
   );
 };
 
-// Style sheet for home page
 const taskStyles = StyleSheet.create({
-  // tasks
-  taskBackground:{
+  taskBackground: {
     alignItems: 'center',
-    backgroundColor: 'lightgreen',
+    backgroundColor: '#1a1a2e',
+    borderWidth: 1,
+    borderColor: '#7c3aed',
+    borderRadius: 12,
     flexDirection: 'row',
     justifyContent: 'flex-start',
-    columnGap: 20,
-    width: '90%',
-    padding: 10,
-    flexWrap: 'wrap'
+    columnGap: 16,
+    width: '100%',
+    padding: 14,
+    marginBottom: 12,
+    shadowColor: '#7c3aed',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
   },
-  taskPoints:{
-    color: 'purple',
-    fontSize: 20,
-    justifyContent: 'flex-end'
+  taskPoints: {
+    color: '#a78bfa',
+    fontSize: 18,
+    fontWeight: 'bold',
+    minWidth: 50,
+    textAlign: 'right',
   },
-  taskText:{
-    justifyContent: 'center'
+  taskText: {
+    color: '#e2e8f0',
+    fontSize: 16,
+    flex: 1,
   },
-
-
-})
-
-const styles = StyleSheet.create({
-    verticallySpaced: {
-        paddingTop: 4,
-        paddingBottom: 4,
-        alignSelf: 'stretch',
-      }
+  rerollContainer: {
+    backgroundColor: '#1a1a2e',
+    borderWidth: 1,
+    borderColor: '#7c3aed',
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 8,
+  },
+  rerollTitle: {
+    color: '#a78bfa',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  rerollOption: {
+    padding: 12,
+    backgroundColor: '#0f0f1a',
+    borderWidth: 1,
+    borderColor: '#7c3aed',
+    borderRadius: 8,
+    marginTop: 8,
+  },
+  rerollText: {
+    color: '#e2e8f0',
+    fontSize: 15,
+  },
 });

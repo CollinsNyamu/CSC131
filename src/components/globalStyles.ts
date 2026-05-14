@@ -1,34 +1,28 @@
 import { StyleSheet } from "react-native";
 
-// Colors
-/*
-  #e7ecef - Light grey
-  #274c77 - Dark blue
-  #6096ba - Medium blue
-  #a3cef1 - Light blue
-  #8b8c89 - Gray
-*/
-
-// Style sheet for multiple screens
 export const globalStyles = StyleSheet.create({
   // header
-  headerBackground:{
+  headerBackground: {
     flex: 1,
-    backgroundColor: '#e7ecef',
+    backgroundColor: '#0f0f1a',
     justifyContent: 'center',
     alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#7c3aed',
   },
-  headerText:{
-    color: '#8b8c89',
-    fontSize: 40
+  headerText: {
+    color: '#ffffff',
+    fontSize: 40,
+    fontWeight: 'bold',
+    letterSpacing: 2,
   },
   // main
-  mainBackground:{
+  mainBackground: {
     flex: 7,
-    backgroundColor: '#a3cef1',
+    backgroundColor: '#0f0f1a',
     justifyContent: 'flex-start',
     alignItems: 'center',
-    rowGap: 20,
-    padding: 20
+    rowGap: 16,
+    padding: 20,
   }
 });
