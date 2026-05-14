@@ -4,13 +4,13 @@
 //Temp. add Log Out button to home screen till nav done
 
 import { globalStyles } from '@/components/globalStyles';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Text, View, Button, Alert, ScrollView } from 'react-native';
+import { Alert, Button, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { tasks } from "../../../data/tasks";
-import { supabase } from '../../../supabase'
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { supabase } from '../../../supabase';
 
 
 
@@ -259,9 +259,9 @@ const Checkbox = () => {
       <Image 
         source={
           pressed
-          ? require('./checkmark_filled.png') 
-          : require('./checkmark_empty.png')} 
-        style={{ width: 50, height: 50, alignSelf: 'center' }}
+          ? require('../../../../assets/images/checkmark_filled.png') 
+          : require('../../../../assets/images/checkmark_empty.png')
+        }  style={{ width: 50, height: 50, alignSelf: 'center' }}
       />
     </Pressable>
   );

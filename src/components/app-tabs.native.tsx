@@ -1,28 +1,27 @@
-import { Icon, Label, NativeTabs } from 'expo-router/unstable-native-tabs';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import Home from '../app/(tabs)/Home/Home';
+import Leaderboard from '../app/(tabs)/Leaderboard';
+import Profile from '../app/(tabs)/Profile';
+import Shop from '../app/(tabs)/Shop';
+import Index from '../app/index';
 
-// Tabs bar at bottom of screen - component for Android and iOS
+const Tab = createBottomTabNavigator();
+
 export default function AppTabs() {
   return (
-    <NativeTabs>
-      <NativeTabs.Trigger name="Home">
-        <Label>Login</Label>
-        <Icon src={require('../../assets/images/icon.png')} />
-      </NativeTabs.Trigger>
-
-      <NativeTabs.Trigger name="Leaderboard">
-        <Label>Leaderboards</Label>
-        <Icon src={require('../../assets/images/checkmark_filled.png')} />
-      </NativeTabs.Trigger>
-
-      <NativeTabs.Trigger name="Shop">
-        <Label>Points Shop</Label>
-        <Icon src={require('../../assets/images/checkmark_empty.png')} />
-      </NativeTabs.Trigger>
-
-      <NativeTabs.Trigger name="Profile">
-        <Label>User Profile</Label>
-        <Icon src={require('../../assets/images/icon.png')} />
-      </NativeTabs.Trigger>
-    </NativeTabs>
+    <Tab.Navigator
+      screenOptions={{
+        tabBarStyle: { backgroundColor: '#0f0f1a', borderTopColor: '#7c3aed' },
+        tabBarActiveTintColor: '#a78bfa',
+        tabBarInactiveTintColor: '#666',
+        headerShown: false,
+      }}
+    >
+      <Tab.Screen name="Tasks" component={Index} />
+      <Tab.Screen name="Home" component={Home} />
+      <Tab.Screen name="Leaderboard" component={Leaderboard} />
+      <Tab.Screen name="Shop" component={Shop} />
+      <Tab.Screen name="Profile" component={Profile} />
+    </Tab.Navigator>
   );
 }
